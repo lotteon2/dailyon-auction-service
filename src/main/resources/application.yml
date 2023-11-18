@@ -1,0 +1,17 @@
+server:
+  port: 8083
+spring:
+  config:
+    activate:
+      on-profile: local,dev,prod
+  application:
+    name: auction-service
+  # config service settings
+  cloud:
+    config:
+      name: auction-service
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, refresh, busrefresh
