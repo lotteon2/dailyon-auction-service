@@ -9,12 +9,6 @@ spring:
     port: 5672
     username: guest
     password: guest
-  # mongodb settings
-  data:
-    mongodb:
-      username: root
-      password: 11111111
-      uri: mongodb://localhost:27017/auction-service
 eureka:
   client:
     register-with-eureka: true
