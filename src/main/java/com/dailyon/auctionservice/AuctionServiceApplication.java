@@ -23,5 +23,4 @@ public class AuctionServiceApplication {
     public void setTimezoneToSeoul() {
         TimeZone.setDefault(TimeZone.getTimeZone("Asia/Seoul"));
     }
-
 }
