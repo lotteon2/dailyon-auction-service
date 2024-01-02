@@ -7,19 +7,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("/auction")
+@RequestMapping("/admin")
 @RequiredArgsConstructor
-public class AuctionController {
+public class AuctionAdminController {
     private final AuctionFacade auctionFacade;
 
     // blocking I/O
-    @PostMapping
+    @PostMapping("/auction")
     public ResponseEntity<CreateAuctionResponse> createAuction(@Valid @RequestBody CreateAuctionRequest createAuctionRequest) {
         return ResponseEntity.status(HttpStatus.CREATED).body(auctionFacade.createAuction(createAuctionRequest));
     }
