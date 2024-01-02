@@ -20,4 +20,4 @@ eureka:
     instance-id: ${spring.application.name}:${server.port}
 
 endpoint:
-  product-service: product-service:8085
+  product-service: localhost:8085

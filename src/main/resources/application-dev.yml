@@ -22,4 +22,4 @@ eureka:
     prefer-ip-address: true
 
 endpoint:
-  product-service: product-service:8085
+  product-service: http://product-service:8085
