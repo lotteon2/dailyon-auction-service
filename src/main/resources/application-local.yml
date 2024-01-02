@@ -18,3 +18,6 @@ eureka:
       defaultZone: http://127.0.0.1:8761/eureka
   instance:
     instance-id: ${spring.application.name}:${server.port}
+
+endpoint:
+  product-service: product-service:8085

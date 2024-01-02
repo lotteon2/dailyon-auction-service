@@ -10,8 +10,9 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClientBuilder;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConverter;
-import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
+
+import org.socialsignin.spring.data.dynamodb.repository.config.EnableDynamoDBRepositories;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -21,8 +22,8 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Date;
 
-@Slf4j
 @Configuration
+@EnableDynamoDBRepositories(basePackages = {"com.dailyon.auctionservice.repository"})
 public class DynamoDbConfig {
     @Value("${cloud.aws.dynamodb.endpoint:dynamodb.ap-northeast-2.amazonaws.com}")
     private String endpoint;
@@ -49,7 +50,7 @@ public class DynamoDbConfig {
 
     @Bean
     @Primary
-    AmazonDynamoDBAsync amazonDynamoDBAsync() {
+    AmazonDynamoDBAsync amazonDynamoDB() {
         AwsClientBuilder.EndpointConfiguration endpointConfiguration =
                 new AwsClientBuilder.EndpointConfiguration(endpoint, "ap-northeast-2");
 
