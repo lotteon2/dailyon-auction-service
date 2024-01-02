@@ -10,6 +10,8 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class AuctionFacade {
@@ -17,13 +19,16 @@ public class AuctionFacade {
     private final ProductFeignClient productFeignClient;
 
     public CreateAuctionResponse createAuction(CreateAuctionRequest createAuctionRequest) {
-        CreateProductResponse productResponse;
+        CreateProductResponse productResponse = null;
+        Auction auction = null;
         try {
             productResponse = productFeignClient.createAuctionProduct(createAuctionRequest.getProductRequest()).getBody();
+            auction = auctionService.create(createAuctionRequest, productResponse);
         } catch (FeignException e) {
             throw new RuntimeException("경매 상품 등록에 실패했습니다");
+        } catch (Exception e) { // 경매 정보 등록 실패 시 feign
+            productFeignClient.deleteAuctionProduct(List.of(productResponse.getProductId()));
         }
-        Auction auction = auctionService.create(createAuctionRequest, productResponse);
         return CreateAuctionResponse.create(auction, productResponse);
     }
 }
