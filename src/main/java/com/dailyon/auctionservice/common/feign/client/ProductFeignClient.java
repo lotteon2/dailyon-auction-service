@@ -14,6 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
         configuration = FeignClientConfig.class
 )
 public interface ProductFeignClient {
-    @PostMapping(value = "/client/products")
+    @PostMapping(value = "/client/products/auction")
     ResponseEntity<CreateProductResponse> createAuctionProduct(@RequestBody CreateAuctionRequest.CreateProductRequest createProductRequest);
 }
