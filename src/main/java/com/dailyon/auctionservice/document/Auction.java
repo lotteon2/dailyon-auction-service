@@ -47,6 +47,7 @@ public class Auction implements Comparable<Auction> {
     private boolean isEnded = false;
 
     @DynamoDBTypeConverted(converter = DynamoDbConfig.LocalDateTimeConverter.class)
+    @DynamoDBAttribute(attributeName = "created_at")
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
