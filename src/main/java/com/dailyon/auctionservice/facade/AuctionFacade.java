@@ -5,10 +5,13 @@ import com.dailyon.auctionservice.common.feign.response.CreateProductResponse;
 import com.dailyon.auctionservice.document.Auction;
 import com.dailyon.auctionservice.dto.request.CreateAuctionRequest;
 import com.dailyon.auctionservice.dto.response.CreateAuctionResponse;
+import com.dailyon.auctionservice.dto.response.ReadAuctionPageResponse;
 import com.dailyon.auctionservice.service.AuctionService;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -30,5 +33,9 @@ public class AuctionFacade {
             productFeignClient.deleteAuctionProduct(List.of(productResponse.getProductId()));
         }
         return CreateAuctionResponse.create(auction, productResponse);
+    }
+
+    public ReadAuctionPageResponse readAuctions(Pageable pageable) {
+        return ReadAuctionPageResponse.of(auctionService.readAuctions(pageable));
     }
 }
