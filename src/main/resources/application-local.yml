@@ -9,6 +9,14 @@ spring:
     port: 5672
     username: guest
     password: guest
+  cloud:
+    discovery:
+      enabled: false # 잠시 꺼둠
+  rsocket:
+    server:
+      port: 6565
+      transport: websocket
+      mapping-path: /rs
 
 eureka:
   client:
