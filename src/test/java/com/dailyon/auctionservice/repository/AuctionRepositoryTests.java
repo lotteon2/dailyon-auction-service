@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 class AuctionRepositoryTests extends ContainerBaseTestSupport {
     @Autowired private AmazonDynamoDBAsync dynamoDB;
@@ -58,5 +59,25 @@ class AuctionRepositoryTests extends ContainerBaseTestSupport {
         assertEquals(5, created.getMaximumWinner());
         assertFalse(created.isEnded());
         assertNotNull(created.getId());
+        assertNotNull(created.getCreatedAt());
+    }
+
+    @Test
+    @DisplayName("경매 전체 목록 조회")
+    void readAuctionPageTest() {
+        for(int i=0; i<5; i++) {
+            auctionRepository.save(Auction.builder()
+                    .auctionProductId((long) i)
+                    .auctionName("TEST_"+i)
+                    .startBidPrice(1000)
+                    .maximumWinner(5)
+                    .startAt(LocalDateTime.now())
+                    .build()
+            );
+        }
+
+        List<Auction> auctions = (List<Auction>) auctionRepository.findAll();
+
+        assertEquals(5, auctions.size());
     }
 }
