@@ -1,0 +1,18 @@
+spring:
+  profiles:
+    active: test
+
+  cloud:
+    config:
+      enabled: false
+    discovery:
+      enabled: false
+
+logging:
+  cloud:
+    aws:
+      credentials:
+        instance-profile: false
+
+endpoint:
+  product-service: localhost:8085

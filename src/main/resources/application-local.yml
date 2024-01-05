@@ -9,13 +9,14 @@ spring:
     port: 5672
     username: guest
     password: guest
-
-  # mongodb settings
-  data:
-    mongodb:
-      username: root
-      password: 11111111
-      uri: mongodb://localhost:27017/auction-service
+  cloud:
+    discovery:
+      enabled: true # 잠시 꺼둠
+  rsocket:
+    server:
+      port: 6565
+      transport: websocket
+      mapping-path: /rs
 
 eureka:
   client:
@@ -25,3 +26,15 @@ eureka:
       defaultZone: http://127.0.0.1:8761/eureka
   instance:
     instance-id: ${spring.application.name}:${server.port}
+
+endpoint:
+  product-service: localhost:8085
+
+cloud:
+  aws:
+    dynamodb:
+      endpoint: http://localhost:8001
+      region: us-west-2
+    credentials:
+      ACCESS_KEY_ID: local
+      SECRET_ACCESS_KEY: local
