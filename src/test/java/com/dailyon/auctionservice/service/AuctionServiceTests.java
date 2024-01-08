@@ -13,7 +13,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -60,7 +59,7 @@ public class AuctionServiceTests extends ContainerBaseTestSupport {
             );
         }
 
-        Page<Auction> auctions = auctionService.readAuctions(PageRequest.of(0, 5));
+        Page<Auction> auctions = auctionService.readAuctionsForAdmin(PageRequest.of(0, 5));
         assertEquals(10, auctions.getTotalElements());
         assertEquals(2, auctions.getTotalPages());
         assertEquals(5, auctions.getContent().size());

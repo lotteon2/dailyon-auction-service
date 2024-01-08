@@ -11,7 +11,8 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
+import static com.dailyon.auctionservice.dto.response.ReadAuctionPageResponse.ReadAuctionResponse;
+
 
 import java.util.List;
 
@@ -35,7 +36,23 @@ public class AuctionFacade {
         return CreateAuctionResponse.create(auction, productResponse);
     }
 
-    public ReadAuctionPageResponse readAuctions(Pageable pageable) {
-        return ReadAuctionPageResponse.of(auctionService.readAuctions(pageable));
+    public ReadAuctionPageResponse readAuctionsForAdmin(Pageable pageable) {
+        return ReadAuctionPageResponse.of(auctionService.readAuctionsForAdmin(pageable));
+    }
+
+    public ReadAuctionPageResponse readFutureAuctions(Pageable pageable) {
+        return ReadAuctionPageResponse.of(auctionService.readFutureAuctions(pageable));
+    }
+
+    public ReadAuctionPageResponse readCurrentAuctions(Pageable pageable) {
+        return ReadAuctionPageResponse.of(auctionService.readCurrentAuctions(pageable));
+    }
+
+    public ReadAuctionPageResponse readPastAuctions(Pageable pageable) {
+        return ReadAuctionPageResponse.of(auctionService.readPastAuctions(pageable));
+    }
+
+    public ReadAuctionResponse readAuctionDetail(String auctionId) {
+        return auctionService.readAuctionDetail(auctionId);
     }
 }
