@@ -25,7 +25,6 @@ eureka:
 endpoint:
   product-service: localhost:8085
 
-
 cloud:
   aws:
     dynamodb:
