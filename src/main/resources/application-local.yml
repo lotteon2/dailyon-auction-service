@@ -11,12 +11,7 @@ spring:
     password: guest
   cloud:
     discovery:
-      enabled: false # 잠시 꺼둠
-  rsocket:
-    server:
-      port: 6565
-      transport: websocket
-      mapping-path: /rs
+      enabled: true # 잠시 꺼둠
 
 eureka:
   client:
@@ -29,3 +24,13 @@ eureka:
 
 endpoint:
   product-service: localhost:8085
+
+
+cloud:
+  aws:
+    dynamodb:
+      endpoint: http://localhost:8001
+      region: us-west-2
+    credentials:
+      ACCESS_KEY_ID: local
+      SECRET_ACCESS_KEY: local
