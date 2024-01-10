@@ -25,7 +25,6 @@ public class ChatHandler implements WebSocketHandler {
     String query = session.getHandshakeInfo().getUri().getQuery();
     Map<String, String> queryMap = getQueryMap(query);
     String userId = queryMap.getOrDefault("id", "");
-    System.out.println(queryMap);
     manager.addSession(userId, session);
 
     return session
