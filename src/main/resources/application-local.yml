@@ -12,11 +12,6 @@ spring:
   cloud:
     discovery:
       enabled: true # 잠시 꺼둠
-  rsocket:
-    server:
-      port: 6565
-      transport: websocket
-      mapping-path: /rs
 
 eureka:
   client:
