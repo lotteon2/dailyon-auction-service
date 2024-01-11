@@ -5,13 +5,8 @@ import com.dailyon.auctionservice.dto.response.CreateAuctionResponse;
 import com.dailyon.auctionservice.dto.response.ReadAuctionPageResponse;
 import com.dailyon.auctionservice.facade.AuctionFacade;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
@@ -23,14 +18,17 @@ import javax.validation.Valid;
 public class AuctionAdminController {
     private final AuctionFacade auctionFacade;
 
-    // blocking I/O
     @PostMapping("/auction")
-    public ResponseEntity<CreateAuctionResponse> createAuction(@Valid @RequestBody CreateAuctionRequest createAuctionRequest) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(auctionFacade.createAuction(createAuctionRequest));
+    public Mono<CreateAuctionResponse> createAuction(
+            @RequestHeader(name = "memberId") String memberId,
+            @RequestHeader(name = "role") String role,
+            @Valid @RequestBody CreateAuctionRequest createAuctionRequest) {
+        return auctionFacade.createAuction(memberId, role, createAuctionRequest);
     }
 
     @GetMapping("/auction")
-    public Mono<ReadAuctionPageResponse> readAuctions(Pageable pageable) {
-        return Mono.just(auctionFacade.readAuctions(pageable));
+    public Mono<ReadAuctionPageResponse> readAuctionsForAdmin(@RequestParam(name = "page") int page,
+                                                              @RequestParam(name = "size") int size) {
+        return Mono.just(auctionFacade.readAuctionsForAdmin(PageRequest.of(page, size)));
     }
 }

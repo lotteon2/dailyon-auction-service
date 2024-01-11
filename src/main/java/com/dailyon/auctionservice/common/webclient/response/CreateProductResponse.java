@@ -1,4 +1,4 @@
-package com.dailyon.auctionservice.common.feign.response;
+package com.dailyon.auctionservice.common.webclient.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

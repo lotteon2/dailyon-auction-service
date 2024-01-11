@@ -13,6 +13,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.util.TimeZone;
 
 @EnableFeignClients
@@ -37,12 +38,15 @@ public class AuctionServiceApplication {
     // TODO : document FIX 후 삭제
     @PostConstruct
     public void setDynamoDB() {
-        TableUtils.deleteTableIfExists(dynamoDB, dynamoDBMapper.generateDeleteTableRequest(Auction.class));
-
         CreateTableRequest createTableRequest = dynamoDBMapper
                 .generateCreateTableRequest(Auction.class)
                 .withProvisionedThroughput(new ProvisionedThroughput(1L, 1L));
 
         TableUtils.createTableIfNotExists(dynamoDB, createTableRequest);
+    }
+
+    @PreDestroy
+    public void deleteDynamoDB() {
+        TableUtils.deleteTableIfExists(dynamoDB, dynamoDBMapper.generateDeleteTableRequest(Auction.class));
     }
 }

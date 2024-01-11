@@ -1,6 +1,6 @@
 package com.dailyon.auctionservice.dto.response;
 
-import com.dailyon.auctionservice.common.feign.response.CreateProductResponse;
+import com.dailyon.auctionservice.common.webclient.response.CreateProductResponse;
 import com.dailyon.auctionservice.document.Auction;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
