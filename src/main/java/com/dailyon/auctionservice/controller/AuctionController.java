@@ -1,12 +1,12 @@
 package com.dailyon.auctionservice.controller;
 
+import com.dailyon.auctionservice.dto.response.ReadAuctionDetailResponse;
 import com.dailyon.auctionservice.dto.response.ReadAuctionPageResponse;
 import com.dailyon.auctionservice.facade.AuctionFacade;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
-import static com.dailyon.auctionservice.dto.response.ReadAuctionPageResponse.ReadAuctionResponse;
 
 
 @CrossOrigin("*")
@@ -17,22 +17,25 @@ public class AuctionController {
     private final AuctionFacade auctionFacade;
 
     @GetMapping("/future")
-    public Mono<ReadAuctionPageResponse> readFutureAuctions(Pageable pageable) {
-        return Mono.just(auctionFacade.readFutureAuctions(pageable));
+    public Mono<ReadAuctionPageResponse> readFutureAuctions(@RequestParam(name = "page") int page,
+                                                            @RequestParam(name = "size") int size) {
+        return Mono.just(auctionFacade.readFutureAuctions(PageRequest.of(page, size)));
     }
 
     @GetMapping("/current")
-    public Mono<ReadAuctionPageResponse> readCurrentAuctions(Pageable pageable) {
-        return Mono.just(auctionFacade.readCurrentAuctions(pageable));
+    public Mono<ReadAuctionPageResponse> readCurrentAuctions(@RequestParam(name = "page") int page,
+                                                             @RequestParam(name = "size") int size) {
+        return Mono.just(auctionFacade.readCurrentAuctions(PageRequest.of(page, size)));
     }
 
     @GetMapping("/past")
-    public Mono<ReadAuctionPageResponse> readPastAuctions(Pageable pageable) {
-        return Mono.just(auctionFacade.readPastAuctions(pageable));
+    public Mono<ReadAuctionPageResponse> readPastAuctions(@RequestParam(name = "page") int page,
+                                                          @RequestParam(name = "size") int size) {
+        return Mono.just(auctionFacade.readPastAuctions(PageRequest.of(page, size)));
     }
 
     @GetMapping("/detail/{auctionId}")
-    public Mono<ReadAuctionResponse> readAuctionDetail(@PathVariable String auctionId) {
-        return Mono.just(auctionFacade.readAuctionDetail(auctionId));
+    public Mono<ReadAuctionDetailResponse> readAuctionDetail(@PathVariable String auctionId) {
+        return auctionFacade.readAuctionDetail(auctionId);
     }
 }

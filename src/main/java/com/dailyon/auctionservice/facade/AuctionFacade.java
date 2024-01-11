@@ -1,17 +1,16 @@
 package com.dailyon.auctionservice.facade;
 
-import com.dailyon.auctionservice.common.feign.client.ProductFeignClient;
-import com.dailyon.auctionservice.common.feign.response.CreateProductResponse;
+import com.dailyon.auctionservice.common.webclient.client.ProductClient;
 import com.dailyon.auctionservice.document.Auction;
 import com.dailyon.auctionservice.dto.request.CreateAuctionRequest;
 import com.dailyon.auctionservice.dto.response.CreateAuctionResponse;
+import com.dailyon.auctionservice.dto.response.ReadAuctionDetailResponse;
 import com.dailyon.auctionservice.dto.response.ReadAuctionPageResponse;
 import com.dailyon.auctionservice.service.AuctionService;
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
-import static com.dailyon.auctionservice.dto.response.ReadAuctionPageResponse.ReadAuctionResponse;
+import reactor.core.publisher.Mono;
 
 
 import java.util.List;
@@ -20,20 +19,18 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AuctionFacade {
     private final AuctionService auctionService;
-    private final ProductFeignClient productFeignClient;
+    private final ProductClient productClient;
 
-    public CreateAuctionResponse createAuction(CreateAuctionRequest createAuctionRequest) {
-        CreateProductResponse productResponse = null;
-        Auction auction = null;
-        try {
-            productResponse = productFeignClient.createAuctionProduct(createAuctionRequest.getProductRequest()).getBody();
-            auction = auctionService.create(createAuctionRequest, productResponse);
-        } catch (FeignException e) {
-            throw new RuntimeException("경매 상품 등록에 실패했습니다");
-        } catch (Exception e) { // 경매 정보 등록 실패 시 feign
-            productFeignClient.deleteAuctionProduct(List.of(productResponse.getProductId()));
-        }
-        return CreateAuctionResponse.create(auction, productResponse);
+    public Mono<CreateAuctionResponse> createAuction(String memberId, String role, CreateAuctionRequest createAuctionRequest) {
+        return productClient.createProduct(memberId, role, createAuctionRequest.getProductRequest()).flatMap(response -> {
+            Auction auction = null;
+            try {
+                auction = auctionService.create(createAuctionRequest, response);
+            } catch (Exception e) {
+                productClient.deleteProducts(memberId, role, List.of(response.getProductId()));
+            }
+            return Mono.just(CreateAuctionResponse.create(auction, response));
+        });
     }
 
     public ReadAuctionPageResponse readAuctionsForAdmin(Pageable pageable) {
@@ -52,7 +49,15 @@ public class AuctionFacade {
         return ReadAuctionPageResponse.of(auctionService.readPastAuctions(pageable));
     }
 
-    public ReadAuctionResponse readAuctionDetail(String auctionId) {
-        return auctionService.readAuctionDetail(auctionId);
+    public Mono<ReadAuctionDetailResponse> readAuctionDetail(String auctionId) {
+        Mono<ReadAuctionDetailResponse.ReadAuctionResponse> auctionDetail =
+                Mono.just(auctionService.readAuctionDetail(auctionId));
+
+        return auctionDetail.flatMap(auction -> {
+            Mono<ReadAuctionDetailResponse.ReadProductDetailResponse> productDetail =
+                    productClient.readProductDetail(auction.getAuctionProductId());
+
+            return productDetail.map(product -> ReadAuctionDetailResponse.of(auction, product));
+        });
     }
 }

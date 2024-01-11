@@ -1,6 +1,6 @@
 package com.dailyon.auctionservice.service;
 
-import com.dailyon.auctionservice.common.feign.response.CreateProductResponse;
+import com.dailyon.auctionservice.common.webclient.response.CreateProductResponse;
 import com.dailyon.auctionservice.document.Auction;
 import com.dailyon.auctionservice.dto.request.CreateAuctionRequest;
 import com.dailyon.auctionservice.repository.AuctionRepository;
@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.dailyon.auctionservice.dto.response.ReadAuctionPageResponse.ReadAuctionResponse;
+import static com.dailyon.auctionservice.dto.response.ReadAuctionDetailResponse.ReadAuctionResponse;
 
 
 import java.util.ArrayList;
