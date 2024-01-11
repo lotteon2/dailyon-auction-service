@@ -6,7 +6,6 @@ import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.util.TableUtils;
 import com.dailyon.auctionservice.document.Auction;
-import com.dailyon.auctionservice.document.AuctionChat;
 import com.dailyon.auctionservice.document.BidHistory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -41,9 +40,6 @@ public class AuctionServiceApplication {
         dynamoDB, dynamoDBMapper.generateDeleteTableRequest(Auction.class));
 
     TableUtils.deleteTableIfExists(
-        dynamoDB, dynamoDBMapper.generateDeleteTableRequest(AuctionChat.class));
-
-    TableUtils.deleteTableIfExists(
         dynamoDB, dynamoDBMapper.generateDeleteTableRequest(BidHistory.class));
 
     CreateTableRequest createTableRequest =
@@ -53,14 +49,10 @@ public class AuctionServiceApplication {
 
     CreateTableRequest createTableRequest2 =
         dynamoDBMapper
-            .generateCreateTableRequest(AuctionChat.class)
-            .withProvisionedThroughput(new ProvisionedThroughput(1L, 1L));
-
-    CreateTableRequest createTableRequest3 =
-        dynamoDBMapper
             .generateCreateTableRequest(BidHistory.class)
             .withProvisionedThroughput(new ProvisionedThroughput(1L, 1L));
 
     TableUtils.createTableIfNotExists(dynamoDB, createTableRequest);
+    TableUtils.createTableIfNotExists(dynamoDB, createTableRequest2);
   }
 }
