@@ -21,7 +21,7 @@ import java.util.Objects;
 import java.util.Set;
 
 @Slf4j
-@Profile({"local"})
+@Profile("local")
 @Configuration(proxyBeanMethods = false)
 public class LocalRedisConfig {
 

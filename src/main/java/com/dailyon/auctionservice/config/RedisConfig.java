@@ -21,7 +21,7 @@ import java.util.Objects;
 import java.util.Set;
 
 @Slf4j
-@Profile({"prod"})
+@Profile("prod")
 @Configuration(proxyBeanMethods = false)
 public class RedisConfig {
 

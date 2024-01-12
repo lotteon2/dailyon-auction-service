@@ -21,7 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Slf4j
-@Profile({"!test"})
+@Profile({"local","prod"})
 @Configuration(proxyBeanMethods = false)
 public class WebSocketConfig {
 
