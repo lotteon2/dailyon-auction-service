@@ -3,29 +3,58 @@ package com.dailyon.auctionservice.config;
 import com.dailyon.auctionservice.chat.messaging.RedisChatMessageListener;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.core.env.Environment;
+import org.springframework.data.redis.connection.*;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.data.redis.support.atomic.RedisAtomicInteger;
 import org.springframework.data.redis.support.atomic.RedisAtomicLong;
+
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @Slf4j
 @Profile({"!test"})
 @Configuration(proxyBeanMethods = false)
 public class RedisConfig {
 
+  private final Environment env;
+
+  public RedisConfig(Environment env) {
+    this.env = env;
+  }
+
+  private Set<RedisNode> parseRedisNodes(String nodes) {
+    Set<RedisNode> redisNodes = new HashSet<>();
+    for (String node : Objects.requireNonNull(nodes).split(",")) {
+      String[] parts = node.split(":");
+      redisNodes.add(new RedisNode(parts[0], Integer.parseInt(parts[1])));
+    }
+    return redisNodes;
+  }
+
   @Bean
-  ReactiveRedisConnectionFactory reactiveRedisConnectionFactory(RedisProperties redisProperties) {
+  @Profile(value = "!prod")
+  ReactiveRedisConnectionFactory reactiveRedisConnectionFactory() {
     RedisStandaloneConfiguration redisStandaloneConfiguration =
-        new RedisStandaloneConfiguration(redisProperties.getHost(), redisProperties.getPort());
-    redisStandaloneConfiguration.setPassword(redisProperties.getPassword());
+        new RedisStandaloneConfiguration(
+            Objects.requireNonNull(env.getProperty("spring.redis.host")),
+            Integer.parseInt(Objects.requireNonNull(env.getProperty("spring.redis.port"))));
+    redisStandaloneConfiguration.setPassword(env.getProperty("spring.redis.password"));
     return new LettuceConnectionFactory(redisStandaloneConfiguration);
+  }
+
+  @Bean
+  @Profile(value = "prod")
+  ReactiveRedisConnectionFactory clusterRedisConnectionFactory() {
+    RedisClusterConfiguration clusterConfiguration = new RedisClusterConfiguration();
+    clusterConfiguration.setClusterNodes(
+        parseRedisNodes(Objects.requireNonNull(env.getProperty("spring.redis.cluster.nodes"))));
+    return new LettuceConnectionFactory(clusterConfiguration);
   }
 
   @Bean
