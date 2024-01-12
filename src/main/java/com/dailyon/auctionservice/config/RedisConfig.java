@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
@@ -37,6 +38,8 @@ public class RedisConfig {
     return redisNodes;
   }
 
+  @Bean
+  @Primary
   public ReactiveRedisConnectionFactory clusterRedisConnectionFactory() {
     RedisClusterConfiguration clusterConfiguration = new RedisClusterConfiguration();
     clusterConfiguration.setClusterNodes(
@@ -45,8 +48,9 @@ public class RedisConfig {
   }
 
   @Bean
-  ReactiveStringRedisTemplate reactiveStringRedisTemplate() {
-    return new ReactiveStringRedisTemplate(clusterRedisConnectionFactory());
+  ReactiveStringRedisTemplate reactiveStringRedisTemplate(
+      ReactiveRedisConnectionFactory connectionFactory) {
+    return new ReactiveStringRedisTemplate(connectionFactory);
   }
   // Redis Atomic Counter to store no. of total messages sent from multiple app instances.
 

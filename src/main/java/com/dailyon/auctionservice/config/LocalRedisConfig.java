@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
@@ -38,6 +39,7 @@ public class LocalRedisConfig {
   }
 
   @Bean
+  @Primary
   ReactiveRedisConnectionFactory reactiveRedisConnectionFactory() {
     RedisStandaloneConfiguration redisStandaloneConfiguration =
         new RedisStandaloneConfiguration(
@@ -49,8 +51,8 @@ public class LocalRedisConfig {
 
   @Bean
   ReactiveStringRedisTemplate reactiveStringRedisTemplate(
-      ReactiveRedisConnectionFactory reactiveRedisConnectionFactory) {
-    return new ReactiveStringRedisTemplate(reactiveRedisConnectionFactory);
+      ReactiveRedisConnectionFactory redisConnectionFactory) {
+    return new ReactiveStringRedisTemplate(redisConnectionFactory);
   }
 
   @Bean
