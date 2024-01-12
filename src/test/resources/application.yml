@@ -13,6 +13,8 @@ logging:
     aws:
       credentials:
         instance-profile: false
+  level:
+    root: DEBUG
 
 endpoint:
   product-service: localhost:8085

@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class FeignClientConfig {
     @Bean
     public RequestInterceptor requestInterceptor() {

@@ -15,21 +15,57 @@ import java.time.LocalDateTime;
 @DynamoDBTable(tableName = "bid_history")
 public class BidHistory {
 
-  @Id
-  @DynamoDBHashKey(attributeName = "member_id")
-  private String memberId;
+  @Id @DynamoDBIgnore private PrimaryKey primaryKey;
 
-  @DynamoDBTypeConverted(converter = DynamoDbConfig.LocalDateTimeConverter.class)
-  @DynamoDBRangeKey(attributeName = "created_at")
-  @Builder.Default
-  private LocalDateTime createdAt = LocalDateTime.now();
-
-  @DynamoDBIndexHashKey(attributeName = "auction_id")
+  @DynamoDBIndexHashKey(
+      attributeName = "auction_id",
+      globalSecondaryIndexName = "auctionRoundIndex")
   private String auctionId;
 
-  @DynamoDBIndexHashKey(attributeName = "round")
-  private Integer round;
+  @DynamoDBIndexRangeKey(attributeName = "round", globalSecondaryIndexName = "auctionRoundIndex")
+  private String round;
 
   @DynamoDBAttribute(attributeName = "bid_amount")
   private Long bidAmount;
+
+  @DynamoDBHashKey
+  @DynamoDBAttribute(attributeName = "member_id")
+  public String getMemberId() {
+    return primaryKey != null ? primaryKey.getMemberId() : null;
+  }
+
+  public void setMemberId(final String partitionKey) {
+    if (primaryKey == null) {
+      primaryKey = new PrimaryKey();
+    }
+    primaryKey.setMemberId(partitionKey);
+  }
+
+  @DynamoDBTypeConverted(converter = DynamoDbConfig.LocalDateTimeConverter.class)
+  @DynamoDBRangeKey(attributeName = "created_at")
+  public LocalDateTime getCreatedAt() {
+    return primaryKey != null ? primaryKey.getCreatedAt() : null;
+  }
+
+  public void setCreatedAt(final LocalDateTime sortKey) {
+    if (primaryKey == null) {
+      primaryKey = new PrimaryKey();
+    }
+    primaryKey.setCreatedAt(sortKey);
+  }
+
+  @Getter
+  @Setter
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @DynamoDBDocument
+  public static class PrimaryKey {
+    @DynamoDBHashKey
+    @DynamoDBAttribute(attributeName = "member_id")
+    private String memberId;
+
+    @DynamoDBTypeConverted(converter = DynamoDbConfig.LocalDateTimeConverter.class)
+    @DynamoDBRangeKey(attributeName = "created_at")
+    private LocalDateTime createdAt;
+  }
 }

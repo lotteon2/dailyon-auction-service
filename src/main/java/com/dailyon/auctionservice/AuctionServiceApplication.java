@@ -3,6 +3,7 @@ package com.dailyon.auctionservice;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsync;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
+import com.amazonaws.services.dynamodbv2.model.Projection;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.util.TableUtils;
 import com.dailyon.auctionservice.document.Auction;
@@ -12,6 +13,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.context.annotation.Profile;
 
 import javax.annotation.PostConstruct;
 import java.util.TimeZone;
@@ -35,6 +37,7 @@ public class AuctionServiceApplication {
 
   // TODO : document FIX 후 삭제
   @PostConstruct
+  @Profile({"!test"})
   public void setDynamoDB() {
     TableUtils.deleteTableIfExists(
         dynamoDB, dynamoDBMapper.generateDeleteTableRequest(Auction.class));
@@ -45,13 +48,19 @@ public class AuctionServiceApplication {
     CreateTableRequest createTableRequest =
         dynamoDBMapper
             .generateCreateTableRequest(Auction.class)
-            .withProvisionedThroughput(new ProvisionedThroughput(1L, 1L));
+            .withProvisionedThroughput(new ProvisionedThroughput(10L, 10L));
 
     CreateTableRequest createTableRequest2 =
         dynamoDBMapper
             .generateCreateTableRequest(BidHistory.class)
             .withProvisionedThroughput(new ProvisionedThroughput(1L, 1L));
 
+    createTableRequest2
+        .getGlobalSecondaryIndexes()
+        .forEach(
+            idx ->
+                idx.withProvisionedThroughput(new ProvisionedThroughput(1L, 1L))
+                    .withProjection(new Projection().withProjectionType("ALL")));
     TableUtils.createTableIfNotExists(dynamoDB, createTableRequest);
     TableUtils.createTableIfNotExists(dynamoDB, createTableRequest2);
   }

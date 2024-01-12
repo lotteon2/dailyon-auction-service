@@ -1,11 +1,15 @@
 package com.dailyon.auctionservice.dto.request;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Message {
   private String userId;
   private String nickname;
   private String message;
-  private String timestamp;
+  private long activeUserCount;
 }

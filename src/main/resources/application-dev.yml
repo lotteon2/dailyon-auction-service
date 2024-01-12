@@ -9,6 +9,10 @@ spring:
     port: 5672
     username: guest
     password: guest
+  redis:
+    host: redis-cluster
+    port: 6379
+    password: 11111111
 eureka:
   client:
     register-with-eureka: true
