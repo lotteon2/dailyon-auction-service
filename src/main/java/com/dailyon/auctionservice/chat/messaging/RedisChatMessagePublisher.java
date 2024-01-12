@@ -25,7 +25,6 @@ public class RedisChatMessagePublisher {
 
   private final ReactiveStringRedisTemplate reactiveStringRedisTemplate;
   private final RedisAtomicInteger chatMessageCounter;
-  private final RedisAtomicLong activeUserCounter;
   private final ObjectMapper objectMapper;
 
   public Mono<Long> publishChatMessage(String message) {
@@ -46,7 +45,6 @@ public class RedisChatMessagePublisher {
               String chatString = "EMPTY_MESSAGE";
               try {
                 Message chatMessage = objectMapper.readValue(message, Message.class);
-                chatMessage.setActiveUserCount(activeUserCounter.get());
                 chatString = objectMapper.writeValueAsString(chatMessage);
               } catch (JsonProcessingException e) {
                 log.error("Error converting ChatMessage {} into string", message, e);

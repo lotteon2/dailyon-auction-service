@@ -11,5 +11,4 @@ public class Message {
   private String userId;
   private String nickname;
   private String message;
-  private long activeUserCount;
 }
