@@ -12,6 +12,23 @@ spring:
   cloud:
     discovery:
       enabled: true # 잠시 꺼둠
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password: 11111111
+#  kafka:
+#    producer:
+#      bootstrap-servers: localhost:9092
+#      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+#      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+#    consumer:
+#      bootstrap-servers: localhost:9092
+#      # 컨슈머 그룹 지정 - 컨슈머 그룹안의 하나의 컨슈머가 다운되더라도 컨슈머 그룹 안의 다른 컨슈머가 읽을 수 있도록 함 또한 Offset으로 재시작시 메시지 관리 가능
+#      group-id: ${random.uuid}
+#      # Kafka consumer가 다운되었을 때 가장 빠른 컨슈머 오프셋을 가지는 것 부터 읽는다.
+#      auto-offset-reset: earliest
+#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
 eureka:
   client:
@@ -20,10 +37,10 @@ eureka:
     service-url:
       defaultZone: http://127.0.0.1:8761/eureka
   instance:
-    instance-id: ${spring.application.name}:${server.port}
+    instance-id: ${spring.cloud.client.hostname}:${spring.application.instance_id:${random.value}}
 
 endpoint:
-  product-service: http://localhost:8085
+  product-service: localhost:8085
 
 cloud:
   aws:
