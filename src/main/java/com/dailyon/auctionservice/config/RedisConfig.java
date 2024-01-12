@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
@@ -47,7 +48,7 @@ public class RedisConfig {
     return new LettuceConnectionFactory(clusterConfiguration);
   }
 
-  @Bean
+  @Bean("rsTemplate")
   ReactiveStringRedisTemplate reactiveStringRedisTemplate(
       ReactiveRedisConnectionFactory connectionFactory) {
     return new ReactiveStringRedisTemplate(connectionFactory);

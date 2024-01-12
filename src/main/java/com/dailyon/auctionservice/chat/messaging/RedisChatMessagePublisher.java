@@ -22,7 +22,7 @@ import static com.dailyon.auctionservice.config.ChatConstants.MESSAGE_TOPIC;
 @RequiredArgsConstructor
 public class RedisChatMessagePublisher {
 
-  @Qualifier("reactiveRedisTemplate")
+  @Qualifier("rsTemplate")
   private final ReactiveStringRedisTemplate reactiveStringRedisTemplate;
 
   private final ObjectMapper objectMapper;

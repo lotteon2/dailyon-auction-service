@@ -49,7 +49,7 @@ public class LocalRedisConfig {
     return new LettuceConnectionFactory(redisStandaloneConfiguration);
   }
 
-  @Bean
+  @Bean("rsTemplate")
   ReactiveStringRedisTemplate reactiveStringRedisTemplate(
       ReactiveRedisConnectionFactory redisConnectionFactory) {
     return new ReactiveStringRedisTemplate(redisConnectionFactory);

@@ -4,6 +4,7 @@ import com.dailyon.auctionservice.controller.ChatHandler;
 import com.dailyon.auctionservice.dto.request.Message;
 import com.dailyon.auctionservice.util.ObjectStringConverter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.connection.ReactiveSubscription;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
@@ -23,7 +24,7 @@ public class RedisChatMessageListener {
   private final ObjectStringConverter objectStringConverter;
 
   public RedisChatMessageListener(
-      ReactiveStringRedisTemplate reactiveStringRedisTemplate,
+      @Qualifier("rsTemplate") ReactiveStringRedisTemplate reactiveStringRedisTemplate,
       ChatHandler chatWebSocketHandler,
       ObjectStringConverter objectStringConverter) {
     this.reactiveStringRedisTemplate = reactiveStringRedisTemplate;
