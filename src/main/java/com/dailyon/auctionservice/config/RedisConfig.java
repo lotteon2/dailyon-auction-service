@@ -6,6 +6,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
@@ -15,6 +16,7 @@ import org.springframework.data.redis.support.atomic.RedisAtomicInteger;
 import org.springframework.data.redis.support.atomic.RedisAtomicLong;
 
 @Slf4j
+@Profile({"!test"})
 @Configuration(proxyBeanMethods = false)
 public class RedisConfig {
 

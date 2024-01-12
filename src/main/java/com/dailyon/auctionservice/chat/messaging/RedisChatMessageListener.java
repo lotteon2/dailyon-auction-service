@@ -4,6 +4,7 @@ import com.dailyon.auctionservice.controller.ChatHandler;
 import com.dailyon.auctionservice.dto.request.Message;
 import com.dailyon.auctionservice.util.ObjectStringConverter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.connection.ReactiveSubscription;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.data.redis.listener.PatternTopic;
@@ -12,8 +13,9 @@ import reactor.core.publisher.Mono;
 
 import static com.dailyon.auctionservice.config.ChatConstants.MESSAGE_TOPIC;
 
-@Component
 @Slf4j
+@Component
+@Profile({"!test"})
 public class RedisChatMessageListener {
 
   private final ReactiveStringRedisTemplate reactiveStringRedisTemplate;

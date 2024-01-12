@@ -7,6 +7,7 @@ import com.dailyon.auctionservice.util.ObjectStringConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.support.atomic.RedisAtomicLong;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.reactive.HandlerMapping;
@@ -20,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Slf4j
+@Profile({"!test"})
 @Configuration(proxyBeanMethods = false)
 public class WebSocketConfig {
 
