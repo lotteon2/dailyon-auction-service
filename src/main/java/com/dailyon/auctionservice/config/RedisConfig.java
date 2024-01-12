@@ -2,6 +2,7 @@ package com.dailyon.auctionservice.config;
 
 import com.dailyon.auctionservice.chat.messaging.RedisChatMessageListener;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,7 +41,7 @@ public class RedisConfig {
     return redisNodes;
   }
 
-  @Bean
+  @Bean(name = "clusterRedis")
   ReactiveRedisConnectionFactory clusterRedisConnectionFactory() {
     RedisClusterConfiguration clusterConfiguration = new RedisClusterConfiguration();
     clusterConfiguration.setClusterNodes(
@@ -50,7 +51,7 @@ public class RedisConfig {
 
   @Bean
   ReactiveStringRedisTemplate reactiveStringRedisTemplate(
-      ReactiveRedisConnectionFactory reactiveRedisConnectionFactory) {
+      @Qualifier("clusterRedis") ReactiveRedisConnectionFactory reactiveRedisConnectionFactory) {
     return new ReactiveStringRedisTemplate(reactiveRedisConnectionFactory);
   }
 
