@@ -4,7 +4,6 @@ import com.dailyon.auctionservice.chat.messaging.RedisChatMessagePublisher;
 import com.dailyon.auctionservice.dto.request.Message;
 import com.dailyon.auctionservice.util.ObjectStringConverter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.support.atomic.RedisAtomicLong;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.socket.WebSocketHandler;
@@ -23,7 +22,6 @@ public class ChatHandler implements WebSocketHandler {
   private final Sinks.Many<Message> chatMessageSink;
   private final Flux<Message> chatMessageFluxSink;
   private final RedisChatMessagePublisher redisChatMessagePublisher;
-  private final RedisAtomicLong activeUserCounter;
   private final ObjectStringConverter objectStringConverter;
 
   public ChatHandler(
@@ -34,7 +32,6 @@ public class ChatHandler implements WebSocketHandler {
     this.chatMessageSink = chatMessageSink;
     this.chatMessageFluxSink = chatMessageSink.asFlux();
     this.redisChatMessagePublisher = redisChatMessagePublisher;
-    this.activeUserCounter = activeUserCounter;
     this.objectStringConverter = objectStringConverter;
   }
 
@@ -65,29 +62,18 @@ public class ChatHandler implements WebSocketHandler {
                         webSocketMessage.getPayloadAsText()))
             .doOnSubscribe(
                 subscription -> {
-                  long activeUserCount = activeUserCounter.incrementAndGet();
-                  log.info(
-                      "User '{}' Connected. Total Active Users: {}",
-                      session.getId(),
-                      activeUserCount);
-                  chatMessageSink.tryEmitNext(
-                      new Message("0", "CONNECTED", "CONNECTED", activeUserCount));
+                  log.info("User '{}' Connected. Total Active Users: {}", session.getId());
+                  chatMessageSink.tryEmitNext(new Message("0", "CONNECTED", "CONNECTED"));
                 })
             .doOnError(
                 throwable -> log.error("Error Occurred while sending message to Redis.", throwable))
             .doFinally(
                 signalType -> {
-                  long activeUserCount = activeUserCounter.decrementAndGet();
-                  log.info(
-                      "User '{}' Disconnected. Total Active Users: {}",
-                      session.getId(),
-                      activeUserCount);
-                  chatMessageSink.tryEmitNext(
-                      new Message("0", "DISCONNECTED", "DISCONNECTED", activeUserCount));
+                  log.info("User '{}' Disconnected. Total Active Users: {}", session.getId());
+                  chatMessageSink.tryEmitNext(new Message("0", "DISCONNECTED", "DISCONNECTED"));
                 })
             .then();
     return Mono.zip(inputMessage, outputMessage).then();
-
   }
 
   private Map<String, String> getQueryMap(String queryStr) {
