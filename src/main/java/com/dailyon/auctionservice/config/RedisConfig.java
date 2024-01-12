@@ -2,7 +2,6 @@ package com.dailyon.auctionservice.config;
 
 import com.dailyon.auctionservice.chat.messaging.RedisChatMessageListener;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,8 +37,7 @@ public class RedisConfig {
     return redisNodes;
   }
 
-  @Bean(name = "clusterRedis")
-  ReactiveRedisConnectionFactory clusterRedisConnectionFactory() {
+  public ReactiveRedisConnectionFactory clusterRedisConnectionFactory() {
     RedisClusterConfiguration clusterConfiguration = new RedisClusterConfiguration();
     clusterConfiguration.setClusterNodes(
         parseRedisNodes(Objects.requireNonNull(env.getProperty("spring.redis.cluster.nodes"))));
@@ -47,9 +45,8 @@ public class RedisConfig {
   }
 
   @Bean
-  ReactiveStringRedisTemplate reactiveStringRedisTemplate(
-      @Qualifier("clusterRedis") ReactiveRedisConnectionFactory reactiveRedisConnectionFactory) {
-    return new ReactiveStringRedisTemplate(reactiveRedisConnectionFactory);
+  ReactiveStringRedisTemplate reactiveStringRedisTemplate() {
+    return new ReactiveStringRedisTemplate(clusterRedisConnectionFactory());
   }
   // Redis Atomic Counter to store no. of total messages sent from multiple app instances.
 
