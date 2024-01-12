@@ -54,18 +54,7 @@ public class RedisConfig {
       @Qualifier("clusterRedis") ReactiveRedisConnectionFactory reactiveRedisConnectionFactory) {
     return new ReactiveStringRedisTemplate(reactiveRedisConnectionFactory);
   }
-
   // Redis Atomic Counter to store no. of total messages sent from multiple app instances.
-  @Bean
-  RedisAtomicInteger chatMessageCounter(RedisConnectionFactory redisConnectionFactory) {
-    return new RedisAtomicInteger(ChatConstants.MESSAGE_COUNTER_KEY, redisConnectionFactory);
-  }
-
-  // Redis Atomic Counter to store no. of Active Users.
-  @Bean
-  RedisAtomicLong activeUserCounter(RedisConnectionFactory redisConnectionFactory) {
-    return new RedisAtomicLong(ChatConstants.ACTIVE_USER_KEY, redisConnectionFactory);
-  }
 
   @Bean
   ApplicationRunner applicationRunner(RedisChatMessageListener redisChatMessageListener) {
