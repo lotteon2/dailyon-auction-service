@@ -39,7 +39,7 @@ public class RedisConfig {
 
   @Bean
   @Profile(value = "!prod")
-  ReactiveRedisConnectionFactory reactiveRedisConnectionFactory() {
+  RedisConnectionFactory reactiveRedisConnectionFactory() {
     RedisStandaloneConfiguration redisStandaloneConfiguration =
         new RedisStandaloneConfiguration(
             Objects.requireNonNull(env.getProperty("spring.redis.host")),
