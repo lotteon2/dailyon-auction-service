@@ -4,7 +4,6 @@ import com.dailyon.auctionservice.chat.messaging.RedisChatMessagePublisher;
 import com.dailyon.auctionservice.dto.request.Message;
 import com.dailyon.auctionservice.util.ObjectStringConverter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.support.atomic.RedisAtomicLong;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketMessage;
@@ -27,7 +26,6 @@ public class ChatHandler implements WebSocketHandler {
   public ChatHandler(
       Sinks.Many<Message> chatMessageSink,
       RedisChatMessagePublisher redisChatMessagePublisher,
-      RedisAtomicLong activeUserCounter,
       ObjectStringConverter objectStringConverter) {
     this.chatMessageSink = chatMessageSink;
     this.chatMessageFluxSink = chatMessageSink.asFlux();

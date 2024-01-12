@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.data.redis.support.atomic.RedisAtomicLong;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.reactive.HandlerMapping;
 import org.springframework.web.reactive.handler.SimpleUrlHandlerMapping;
@@ -21,17 +20,16 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Slf4j
-@Profile({"local","prod"})
+@Profile({"local", "prod"})
 @Configuration(proxyBeanMethods = false)
 public class WebSocketConfig {
 
   @Bean
   public ChatHandler webSocketHandler(
       RedisChatMessagePublisher redisChatMessagePublisher,
-      RedisAtomicLong activeUserCounter,
       ObjectStringConverter objectStringConverter) {
     Sinks.Many<Message> chatMessageSink = Sinks.many().multicast().directBestEffort();
-    return new ChatHandler(chatMessageSink, redisChatMessagePublisher, activeUserCounter, objectStringConverter);
+    return new ChatHandler(chatMessageSink, redisChatMessagePublisher, objectStringConverter);
   }
 
   @Bean

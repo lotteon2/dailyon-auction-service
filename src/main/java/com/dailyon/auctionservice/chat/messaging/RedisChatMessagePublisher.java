@@ -7,8 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
-import org.springframework.data.redis.support.atomic.RedisAtomicInteger;
-import org.springframework.data.redis.support.atomic.RedisAtomicLong;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -24,11 +22,9 @@ import static com.dailyon.auctionservice.config.ChatConstants.MESSAGE_TOPIC;
 public class RedisChatMessagePublisher {
 
   private final ReactiveStringRedisTemplate reactiveStringRedisTemplate;
-  private final RedisAtomicInteger chatMessageCounter;
   private final ObjectMapper objectMapper;
 
   public Mono<Long> publishChatMessage(String message) {
-    Integer totalChatMessage = chatMessageCounter.incrementAndGet();
     return Mono.fromCallable(
             () -> {
               try {
@@ -36,7 +32,9 @@ public class RedisChatMessagePublisher {
               } catch (UnknownHostException e) {
                 log.error("Error getting hostname.", e);
               }
-              log.info("inetAddress.getLocalHost().getHostName() {} ", InetAddress.getLocalHost().getHostName());
+              log.info(
+                  "inetAddress.getLocalHost().getHostName() {} ",
+                  InetAddress.getLocalHost().getHostName());
               return "localhost";
             })
         .map(
@@ -57,10 +55,7 @@ public class RedisChatMessagePublisher {
               // Publish Message to Redis Channels
               return reactiveStringRedisTemplate
                   .convertAndSend(MESSAGE_TOPIC, chatString)
-                  .doOnSuccess(
-                      aLong ->
-                          log.debug(
-                              "Total of {} Messages published to Redis Topic.", totalChatMessage))
+                  .doOnSuccess(aLong -> log.debug("Total of {} Messages published to Redis Topic."))
                   .doOnError(throwable -> log.error("Error publishing message.", throwable));
             });
   }
