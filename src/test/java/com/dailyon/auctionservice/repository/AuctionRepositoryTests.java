@@ -8,8 +8,6 @@ import com.amazonaws.services.dynamodbv2.util.TableUtils;
 import com.dailyon.auctionservice.ContainerBaseTestSupport;
 import com.dailyon.auctionservice.document.Auction;
 import org.junit.jupiter.api.AfterEach;
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,6 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class AuctionRepositoryTests extends ContainerBaseTestSupport {
     @Autowired private AmazonDynamoDBAsync dynamoDB;
@@ -64,7 +65,7 @@ class AuctionRepositoryTests extends ContainerBaseTestSupport {
 
     @Test
     @DisplayName("경매 전체 목록 조회")
-    void readAuctionPageTest() {
+    void readAuctionListTest() {
         for(int i=0; i<5; i++) {
             auctionRepository.save(Auction.builder()
                     .auctionProductId((long) i)
@@ -79,5 +80,61 @@ class AuctionRepositoryTests extends ContainerBaseTestSupport {
         List<Auction> auctions = (List<Auction>) auctionRepository.findAll();
 
         assertEquals(5, auctions.size());
+    }
+
+    @Test
+    @DisplayName("id로 특정 경매 조회")
+    void findByIdTest() {
+        Auction auction = auctionRepository.save(Auction.builder()
+                .auctionProductId(1L)
+                .auctionName("TEST")
+                .startBidPrice(1000)
+                .maximumWinner(5)
+                .startAt(LocalDateTime.now())
+                .build());
+
+        Optional<Auction> findById = auctionRepository.findById(auction.getId());
+
+        assertTrue(findById.isPresent());
+    }
+
+    @Test
+    @DisplayName("이후 경매 목록 조회")
+    void readFutureAuctionPageTest() {
+        for(int i=0; i<5; i++) {
+            auctionRepository.save(Auction.builder()
+                    .auctionProductId((long) i)
+                    .auctionName("TEST_"+i)
+                    .startBidPrice(1000)
+                    .maximumWinner(5)
+                    .startAt(LocalDateTime.now())
+                    .build()
+            );
+        }
+
+        List<Auction> auctions =
+                auctionRepository.findAuctionsByStartedAndEnded(false, false);
+
+        assertEquals(5, auctions.size());
+    }
+
+    @Test
+    @DisplayName("이전 경매 목록 조회")
+    void readPastAuctionPageTest() {
+        for(int i=0; i<5; i++) {
+            auctionRepository.save(Auction.builder()
+                    .auctionProductId((long) i)
+                    .auctionName("TEST_"+i)
+                    .startBidPrice(1000)
+                    .maximumWinner(5)
+                    .startAt(LocalDateTime.now())
+                    .build()
+            );
+        }
+
+        List<Auction> auctions =
+                auctionRepository.findAuctionsByStartedAndEnded(true, true);
+
+        assertEquals(0, auctions.size());
     }
 }
