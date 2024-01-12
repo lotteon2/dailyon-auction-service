@@ -8,9 +8,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
-import org.springframework.data.redis.connection.RedisClusterConfiguration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisNode;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.data.redis.support.atomic.RedisAtomicInteger;
@@ -21,13 +21,13 @@ import java.util.Objects;
 import java.util.Set;
 
 @Slf4j
-@Profile({"prod"})
+@Profile({"local"})
 @Configuration(proxyBeanMethods = false)
-public class RedisConfig {
+public class LocalRedisConfig {
 
   private final Environment env;
 
-  public RedisConfig(Environment env) {
+  public LocalRedisConfig(Environment env) {
     this.env = env;
   }
 
@@ -41,11 +41,13 @@ public class RedisConfig {
   }
 
   @Bean
-  ReactiveRedisConnectionFactory clusterRedisConnectionFactory() {
-    RedisClusterConfiguration clusterConfiguration = new RedisClusterConfiguration();
-    clusterConfiguration.setClusterNodes(
-        parseRedisNodes(Objects.requireNonNull(env.getProperty("spring.redis.cluster.nodes"))));
-    return new LettuceConnectionFactory(clusterConfiguration);
+  ReactiveRedisConnectionFactory reactiveRedisConnectionFactory() {
+    RedisStandaloneConfiguration redisStandaloneConfiguration =
+        new RedisStandaloneConfiguration(
+            Objects.requireNonNull(env.getProperty("spring.redis.host")),
+            Integer.parseInt(Objects.requireNonNull(env.getProperty("spring.redis.port"))));
+    redisStandaloneConfiguration.setPassword(env.getProperty("spring.redis.password"));
+    return new LettuceConnectionFactory(redisStandaloneConfiguration);
   }
 
   @Bean
