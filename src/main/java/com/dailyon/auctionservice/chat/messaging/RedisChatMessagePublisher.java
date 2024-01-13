@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -21,7 +22,9 @@ import static com.dailyon.auctionservice.config.ChatConstants.MESSAGE_TOPIC;
 @RequiredArgsConstructor
 public class RedisChatMessagePublisher {
 
+  @Qualifier("rsTemplate")
   private final ReactiveStringRedisTemplate reactiveStringRedisTemplate;
+
   private final ObjectMapper objectMapper;
 
   public Mono<Long> publishChatMessage(String message) {

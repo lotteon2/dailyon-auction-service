@@ -2,11 +2,12 @@ package com.dailyon.auctionservice.config;
 
 import com.dailyon.auctionservice.chat.messaging.RedisChatMessageListener;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
@@ -38,18 +39,19 @@ public class RedisConfig {
     return redisNodes;
   }
 
-  @Bean(name = "clusterRedis")
-  ReactiveRedisConnectionFactory clusterRedisConnectionFactory() {
+  @Bean
+  @Primary
+  public ReactiveRedisConnectionFactory clusterRedisConnectionFactory() {
     RedisClusterConfiguration clusterConfiguration = new RedisClusterConfiguration();
     clusterConfiguration.setClusterNodes(
         parseRedisNodes(Objects.requireNonNull(env.getProperty("spring.redis.cluster.nodes"))));
     return new LettuceConnectionFactory(clusterConfiguration);
   }
 
-  @Bean
+  @Bean("rsTemplate")
   ReactiveStringRedisTemplate reactiveStringRedisTemplate(
-      @Qualifier("clusterRedis") ReactiveRedisConnectionFactory reactiveRedisConnectionFactory) {
-    return new ReactiveStringRedisTemplate(reactiveRedisConnectionFactory);
+      ReactiveRedisConnectionFactory connectionFactory) {
+    return new ReactiveStringRedisTemplate(connectionFactory);
   }
   // Redis Atomic Counter to store no. of total messages sent from multiple app instances.
 
