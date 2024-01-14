@@ -17,4 +17,4 @@ logging:
     root: DEBUG
 
 endpoint:
-  product-service: localhost:8085
+  product-service: http://localhost:8085
