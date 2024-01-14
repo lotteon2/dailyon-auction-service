@@ -40,7 +40,7 @@ eureka:
     instance-id: ${spring.cloud.client.hostname}:${spring.application.instance_id:${random.value}}
 
 endpoint:
-  product-service: localhost:8085
+  product-service: http://localhost:8085
 
 cloud:
   aws:
