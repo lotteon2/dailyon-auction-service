@@ -30,8 +30,8 @@ public class AuctionService {
                         response.getProductId(),
                         auctionRequest.getAuctionName(),
                         auctionRequest.getStartBidPrice(),
-                        auctionRequest.getMaximumWinner(),
                         auctionRequest.getAskingPrice(),
+                        auctionRequest.getMaximumWinner(),
                         auctionRequest.getStartAt()
                 )
         );
