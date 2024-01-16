@@ -56,13 +56,15 @@ public class AuctionHistoryRepositoryTests extends ContainerBaseTestSupport {
                 1L,
                 "img.png",
                 "name",
+                1L,
+                "size",
                 true,
                 10000L,
                 1000L,
                 1000L
         );
 
-        AuctionHistory savedHistory = auctionHistoryRepository.save(history);
+        Assertions.assertDoesNotThrow(() -> auctionHistoryRepository.save(history));
     }
 
     @Test
@@ -70,29 +72,29 @@ public class AuctionHistoryRepositoryTests extends ContainerBaseTestSupport {
     void findAuctionHistoryListTests() {
         List<AuctionHistory> histories = List.of(
                 AuctionHistory.create(
-                        "1", "TEST", 1L, "img.png", "name",
-                        true, 10000L, 1000L, 1000L
+                        "1", "TEST", 1L, "img.png", "name", 1L,
+                        "size", true, 10000L, 1000L, 1000L
                 ),
                 AuctionHistory.create(
-                        "1", "TEST2", 2L, "img.png", "name",
-                        false, 0L, 100L, 10000L
+                        "1", "TEST2", 2L, "img.png", "name", 1L,
+                        "size", false, 0L, 100L, 10000L
                 ),
                 AuctionHistory.create(
-                        "1", "TEST3", 3L, "img.png", "name",
-                        false, 0L, 1000L, 10000L
+                        "1", "TEST3", 3L, "img.png", "name", 1L,
+                        "size", false, 0L, 1000L, 10000L
                 ),
                 AuctionHistory.create(
-                        "2", "TEST", 1L, "img.png", "name",
-                        true, 10000L, 1000L, 1000L
+                        "2", "TEST", 1L, "img.png", "name", 1L,
+                        "size", true, 10000L, 1000L, 1000L
                 ),
                 AuctionHistory.create(
-                        "2", "TEST2", 2L, "img.png", "name",
-                        false, 0L, 100L, 10000L
+                        "2", "TEST2", 2L, "img.png", "name", 1L,
+                        "size", false, 0L, 100L, 10000L
                 )
         );
         auctionHistoryRepository.saveAll(histories);
 
-        List<AuctionHistory> byMemberId = auctionHistoryRepository.findByMemberId(String.valueOf(1L));
+        List<AuctionHistory> byMemberId = auctionHistoryRepository.findByMemberId("1");
 
         Assertions.assertEquals(3, byMemberId.size());
     }
