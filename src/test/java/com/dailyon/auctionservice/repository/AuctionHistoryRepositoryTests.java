@@ -53,6 +53,7 @@ public class AuctionHistoryRepositoryTests extends ContainerBaseTestSupport {
         AuctionHistory history = AuctionHistory.create(
                 "1",
                 "TEST",
+                "",
                 1L,
                 "img.png",
                 "name",
@@ -72,23 +73,23 @@ public class AuctionHistoryRepositoryTests extends ContainerBaseTestSupport {
     void findAuctionHistoryListTests() {
         List<AuctionHistory> histories = List.of(
                 AuctionHistory.create(
-                        "1", "TEST", 1L, "img.png", "name", 1L,
+                        "1", "TEST", "", 1L, "img.png", "name", 1L,
                         "size", true, 10000L, 1000L, 1000L
                 ),
                 AuctionHistory.create(
-                        "1", "TEST2", 2L, "img.png", "name", 1L,
+                        "1", "TEST2", "",2L, "img.png", "name", 1L,
                         "size", false, 0L, 100L, 10000L
                 ),
                 AuctionHistory.create(
-                        "1", "TEST3", 3L, "img.png", "name", 1L,
+                        "1", "TEST3", "",3L, "img.png", "name", 1L,
                         "size", false, 0L, 1000L, 10000L
                 ),
                 AuctionHistory.create(
-                        "2", "TEST", 1L, "img.png", "name", 1L,
+                        "2", "TEST", "",1L, "img.png", "name", 1L,
                         "size", true, 10000L, 1000L, 1000L
                 ),
                 AuctionHistory.create(
-                        "2", "TEST2", 2L, "img.png", "name", 1L,
+                        "2", "TEST2", "",2L, "img.png", "name", 1L,
                         "size", false, 0L, 100L, 10000L
                 )
         );
