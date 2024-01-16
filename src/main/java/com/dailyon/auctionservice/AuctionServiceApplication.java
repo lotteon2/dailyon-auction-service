@@ -41,11 +41,11 @@ public class AuctionServiceApplication {
   @PostConstruct
   @Profile({"!test"})
   public void setDynamoDB() {
-    TableUtils.deleteTableIfExists(
-        dynamoDB, dynamoDBMapper.generateDeleteTableRequest(Auction.class));
+//    TableUtils.deleteTableIfExists(
+//        dynamoDB, dynamoDBMapper.generateDeleteTableRequest(Auction.class));
 
-    TableUtils.deleteTableIfExists(
-        dynamoDB, dynamoDBMapper.generateDeleteTableRequest(BidHistory.class));
+//    TableUtils.deleteTableIfExists(
+//        dynamoDB, dynamoDBMapper.generateDeleteTableRequest(BidHistory.class));
 
     TableUtils.deleteTableIfExists(
         dynamoDB, dynamoDBMapper.generateDeleteTableRequest(AuctionHistory.class));

@@ -12,16 +12,13 @@ import org.springframework.test.context.TestPropertySource;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @TestPropertySource(
-        properties = {
-                "cloud.aws.dynamodb.endpoint=http://localhost:8000",
-                "cloud.aws.credentials.ACCESS_KEY_ID=testkey",
-                "cloud.aws.credentials.SECRET_ACCESS_KEY=testkey",
-                "secretKey=test"
-        })
+    properties = {
+      "cloud.aws.dynamodb.endpoint=http://localhost:8000",
+      "cloud.aws.credentials.ACCESS_KEY_ID=testkey",
+      "cloud.aws.credentials.SECRET_ACCESS_KEY=testkey",
+      "secretKey=testkey"
+    })
 public class IntegrationTestSupport {
-        @MockBean
-        ReactiveRedisRepository reactiveRedisRepository;
-
-        @MockBean
-        ChatHandler chatHandler;
+  @MockBean ReactiveRedisRepository reactiveRedisRepository;
+  @MockBean ChatHandler chatHandler;
 }

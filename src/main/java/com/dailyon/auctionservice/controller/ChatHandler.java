@@ -97,6 +97,7 @@ public class ChatHandler implements WebSocketHandler {
   }
 
   public Mono<Void> biddingBroadCast(ChatPayload chatPayload) {
+    log.info("payload {}", chatPayload);
     return objectStringConverter
         .objectToString(chatPayload)
         .flatMap(redisChatMessagePublisher::publishChatMessage)
