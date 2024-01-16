@@ -31,6 +31,9 @@ public class AuctionHistory implements Comparable<AuctionHistory> {
     )
     private String auctionId;
 
+    @DynamoDBAttribute(attributeName = "auction_name")
+    private String auctionName;
+
     @DynamoDBAttribute(attributeName = "auction_product_id")
     private Long auctionProductId;
 
@@ -77,6 +80,7 @@ public class AuctionHistory implements Comparable<AuctionHistory> {
     public static AuctionHistory create(
             String memberId,
             String auctionId,
+            String auctionName,
             Long auctionProductId,
             String auctionProductImg,
             String auctionProductName,
@@ -90,6 +94,7 @@ public class AuctionHistory implements Comparable<AuctionHistory> {
         return AuctionHistory.builder()
                 .memberId(memberId)
                 .auctionId(auctionId)
+                .auctionName(auctionName)
                 .auctionProductId(auctionProductId)
                 .auctionProductImg(auctionProductImg)
                 .auctionProductName(auctionProductName)
