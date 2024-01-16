@@ -1,4 +1,4 @@
-package com.dailyon.auctionservice.util;
+package com.dailyon.auctionservice.chat.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
