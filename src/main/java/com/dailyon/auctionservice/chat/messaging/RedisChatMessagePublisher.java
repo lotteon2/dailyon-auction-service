@@ -1,5 +1,7 @@
 package com.dailyon.auctionservice.chat.messaging;
 
+import com.dailyon.auctionservice.chat.response.ChatCommand;
+import com.dailyon.auctionservice.chat.response.ChatPayload;
 import com.dailyon.auctionservice.dto.request.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,7 +16,7 @@ import reactor.core.publisher.Mono;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import static com.dailyon.auctionservice.config.ChatConstants.MESSAGE_TOPIC;
+import static com.dailyon.auctionservice.chat.util.ChatConstants.MESSAGE_TOPIC;
 
 @Slf4j
 @Component
@@ -35,29 +37,26 @@ public class RedisChatMessagePublisher {
               } catch (UnknownHostException e) {
                 log.error("Error getting hostname.", e);
               }
-              log.info(
-                  "inetAddress.getLocalHost().getHostName() {} ",
-                  InetAddress.getLocalHost().getHostName());
               return "localhost";
             })
         .map(
             hostName -> {
-              log.info("message -> {}", message);
-              String chatString = "EMPTY_MESSAGE";
+              String result = "EMPTY_MESSAGE";
               try {
-                Message chatMessage = objectMapper.readValue(message, Message.class);
-                chatString = objectMapper.writeValueAsString(chatMessage);
+                ChatPayload chatPayload = objectMapper.readValue(message, ChatPayload.class);
+                log.info("chat payload -> {}", chatPayload);
+                result = objectMapper.writeValueAsString(chatPayload);
               } catch (JsonProcessingException e) {
                 log.error("Error converting ChatMessage {} into string", message, e);
                 log.error("Error converting ChatMessage {} into string", "chatMessage", e);
               }
-              return chatString;
+              return result;
             })
         .flatMap(
-            chatString -> {
+            result -> {
               // Publish Message to Redis Channels
               return reactiveStringRedisTemplate
-                  .convertAndSend(MESSAGE_TOPIC, chatString)
+                  .convertAndSend(MESSAGE_TOPIC, result)
                   .doOnSuccess(aLong -> log.debug("Total of {} Messages published to Redis Topic."))
                   .doOnError(throwable -> log.error("Error publishing message.", throwable));
             });

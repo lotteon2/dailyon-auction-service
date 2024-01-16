@@ -28,6 +28,9 @@ public class BidHistory {
   @DynamoDBAttribute(attributeName = "bid_amount")
   private Long bidAmount;
 
+  @DynamoDBAttribute(attributeName = "nickname")
+  private String nickname;
+
   @DynamoDBHashKey
   @DynamoDBAttribute(attributeName = "member_id")
   public String getMemberId() {
@@ -60,12 +63,16 @@ public class BidHistory {
   @AllArgsConstructor
   @DynamoDBDocument
   public static class PrimaryKey {
+    @DynamoDBTypeConverted(converter = DynamoDbConfig.LocalDateTimeConverter.class)
+    @DynamoDBRangeKey(attributeName = "created_at")
+    public LocalDateTime createdAt;
+
     @DynamoDBHashKey
     @DynamoDBAttribute(attributeName = "member_id")
     private String memberId;
 
-    @DynamoDBTypeConverted(converter = DynamoDbConfig.LocalDateTimeConverter.class)
-    @DynamoDBRangeKey(attributeName = "created_at")
-    private LocalDateTime createdAt;
+    public static PrimaryKey createKey(String memberId) {
+      return new PrimaryKey(LocalDateTime.now(), memberId);
+    }
   }
 }

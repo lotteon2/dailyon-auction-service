@@ -18,7 +18,7 @@ import javax.validation.Valid;
 public class AuctionAdminController {
     private final AuctionFacade auctionFacade;
 
-    @PostMapping("/auction")
+    @PostMapping("/auctions")
     public Mono<CreateAuctionResponse> createAuction(
             @RequestHeader(name = "memberId") String memberId,
             @RequestHeader(name = "role") String role,
@@ -26,7 +26,7 @@ public class AuctionAdminController {
         return auctionFacade.createAuction(memberId, role, createAuctionRequest);
     }
 
-    @GetMapping("/auction")
+    @GetMapping("/auctions")
     public Mono<ReadAuctionPageResponse> readAuctionsForAdmin(@RequestParam(name = "page") int page,
                                                               @RequestParam(name = "size") int size) {
         return Mono.just(auctionFacade.readAuctionsForAdmin(PageRequest.of(page, size)));

@@ -1,6 +1,10 @@
 package com.dailyon.auctionservice.config;
 
 import com.dailyon.auctionservice.chat.messaging.RedisChatMessageListener;
+import com.dailyon.auctionservice.document.BidHistory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
@@ -13,7 +17,11 @@ import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
 import org.springframework.data.redis.connection.RedisNode;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -53,7 +61,26 @@ public class RedisConfig {
       ReactiveRedisConnectionFactory connectionFactory) {
     return new ReactiveStringRedisTemplate(connectionFactory);
   }
-  // Redis Atomic Counter to store no. of total messages sent from multiple app instances.
+
+  @Bean("reactiveRedisTemplateForBid")
+  public ReactiveRedisTemplate<String, BidHistory> reactiveRedisTemplate(
+          ReactiveRedisConnectionFactory factory) {
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.registerModule(new JavaTimeModule()); // Java 8 날짜/시간 모듈 등록
+    objectMapper.disable(
+            SerializationFeature.WRITE_DATES_AS_TIMESTAMPS); // 날짜를 timestamp가 아닌 ISO 형식으로 출력
+
+    Jackson2JsonRedisSerializer<BidHistory> serializer =
+            new Jackson2JsonRedisSerializer<>(BidHistory.class);
+    serializer.setObjectMapper(objectMapper);
+    RedisSerializationContext<String, BidHistory> serializationContext =
+            RedisSerializationContext.<String, BidHistory>newSerializationContext(
+                            new StringRedisSerializer())
+                    .value(serializer)
+                    .build();
+
+    return new ReactiveRedisTemplate<>(factory, serializationContext);
+  }
 
   @Bean
   ApplicationRunner applicationRunner(RedisChatMessageListener redisChatMessageListener) {

@@ -1,8 +1,9 @@
 package com.dailyon.auctionservice.controller;
 
 import com.dailyon.auctionservice.chat.messaging.RedisChatMessagePublisher;
+import com.dailyon.auctionservice.chat.response.ChatPayload;
+import com.dailyon.auctionservice.chat.util.ObjectStringConverter;
 import com.dailyon.auctionservice.dto.request.Message;
-import com.dailyon.auctionservice.util.ObjectStringConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.socket.WebSocketHandler;
@@ -16,15 +17,17 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.dailyon.auctionservice.chat.response.ChatCommand.MESSAGE;
+
 @Slf4j
 public class ChatHandler implements WebSocketHandler {
-  private final Sinks.Many<Message> chatMessageSink;
-  private final Flux<Message> chatMessageFluxSink;
+  private final Sinks.Many<ChatPayload> chatMessageSink;
+  private final Flux<ChatPayload> chatMessageFluxSink;
   private final RedisChatMessagePublisher redisChatMessagePublisher;
   private final ObjectStringConverter objectStringConverter;
 
   public ChatHandler(
-      Sinks.Many<Message> chatMessageSink,
+      Sinks.Many<ChatPayload> chatMessageSink,
       RedisChatMessagePublisher redisChatMessagePublisher,
       ObjectStringConverter objectStringConverter) {
     this.chatMessageSink = chatMessageSink;
@@ -35,11 +38,6 @@ public class ChatHandler implements WebSocketHandler {
 
   @Override
   public Mono<Void> handle(WebSocketSession session) {
-    String query = session.getHandshakeInfo().getUri().getQuery();
-    Map<String, String> queryMap = getQueryMap(query);
-    String userId = queryMap.getOrDefault("id", "");
-
-    // 여기서 시작해봅니다...
     Flux<WebSocketMessage> sendMessageFlux =
         chatMessageFluxSink
             .flatMap(objectStringConverter::objectToString)
@@ -47,10 +45,7 @@ public class ChatHandler implements WebSocketHandler {
             .doOnError(
                 throwable ->
                     log.error("Error Occurred while sending message to WebSocket.", throwable));
-
     Mono<Void> outputMessage = session.send(sendMessageFlux);
-    //    manager.addSession(userId, session);
-
     Mono<Void> inputMessage =
         session
             .receive()
@@ -60,15 +55,17 @@ public class ChatHandler implements WebSocketHandler {
                         webSocketMessage.getPayloadAsText()))
             .doOnSubscribe(
                 subscription -> {
-                  log.info("User '{}' Connected. Total Active Users: {}", session.getId());
-                  chatMessageSink.tryEmitNext(new Message("0", "CONNECTED", "CONNECTED"));
+                  ChatPayload<Message> payload =
+                      ChatPayload.of(MESSAGE, new Message("0", null, null));
+                  chatMessageSink.tryEmitNext(payload);
                 })
             .doOnError(
                 throwable -> log.error("Error Occurred while sending message to Redis.", throwable))
             .doFinally(
                 signalType -> {
-                  log.info("User '{}' Disconnected. Total Active Users: {}", session.getId());
-                  chatMessageSink.tryEmitNext(new Message("0", "DISCONNECTED", "DISCONNECTED"));
+                  ChatPayload<Message> payload =
+                      ChatPayload.of(MESSAGE, new Message("0", null, null));
+                  chatMessageSink.tryEmitNext(payload);
                 })
             .then();
     return Mono.zip(inputMessage, outputMessage).then();
@@ -89,13 +86,28 @@ public class ChatHandler implements WebSocketHandler {
     return queryMap;
   }
 
-  public Mono<Sinks.EmitResult> sendMessage(Message chatMessage) {
+  public Mono<Sinks.EmitResult> sendMessage(ChatPayload chatMessage) {
     return Mono.fromSupplier(() -> chatMessageSink.tryEmitNext(chatMessage))
         .doOnSuccess(
             emitResult -> {
               if (emitResult.isFailure()) {
-                log.error("Failed to send message with userId: {}", chatMessage.getUserId());
+                log.error("Failed to send message");
               }
             });
+  }
+
+  public Mono<Void> biddingBroadCast(ChatPayload chatPayload) {
+    log.info("payload {}", chatPayload);
+    return objectStringConverter
+        .objectToString(chatPayload)
+        .flatMap(redisChatMessagePublisher::publishChatMessage)
+        .then();
+  }
+
+  public Mono<Void> sendStart(ChatPayload chatPayload) {
+    return objectStringConverter
+        .objectToString(chatPayload)
+        .flatMap(redisChatMessagePublisher::publishChatMessage)
+        .then();
   }
 }
