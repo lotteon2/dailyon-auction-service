@@ -2,6 +2,7 @@ package com.dailyon.auctionservice.repository;
 
 import com.dailyon.auctionservice.document.BidHistory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.ReactiveZSetOperations;
 import org.springframework.stereotype.Repository;
@@ -10,6 +11,7 @@ import reactor.core.publisher.Mono;
 import java.time.Duration;
 import java.util.List;
 
+@Profile("!test")
 @Repository
 public class ReactiveRedisRepository {
   private static final String AUCTION_KEY = "auction_id:";
