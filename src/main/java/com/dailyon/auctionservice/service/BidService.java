@@ -26,4 +26,11 @@ public class BidService {
         .then(Mono.just(bidHistoryRepository.save(bidHistory)))
         .map(BidHistory::getBidAmount);
   }
+
+  public Mono<List<TopBidderResponse>> getTopBidder(CreateBidRequest request, int maximumWinner) {
+    return reactiveRedisRepository
+        .getTopBidder(request, maximumWinner)
+        .map(TopBidderResponse::from)
+        .collectList();
+  }
 }

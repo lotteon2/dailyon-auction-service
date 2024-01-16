@@ -9,15 +9,15 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
 public class WebClientConfig {
-    @Value("${endpoint.product-service}")
-    private String endpoint;
+  @Value("${endpoint.product-service}")
+  private String endpoint;
 
-    @Bean
-    public WebClient webClient() {
-        return WebClient.builder()
-                .baseUrl(endpoint)
-                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(2 * 1024 *1024))
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .build();
-    }
+  @Bean
+  public WebClient webClient() {
+    return WebClient.builder()
+        .baseUrl(endpoint)
+        .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
+        .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .build();
+  }
 }

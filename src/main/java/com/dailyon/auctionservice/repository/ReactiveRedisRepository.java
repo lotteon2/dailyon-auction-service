@@ -1,14 +1,16 @@
 package com.dailyon.auctionservice.repository;
 
 import com.dailyon.auctionservice.document.BidHistory;
+import com.dailyon.auctionservice.dto.request.CreateBidRequest;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Range;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.ReactiveZSetOperations;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
-import java.util.List;
 
 @Repository
 public class ReactiveRedisRepository {
@@ -25,19 +27,20 @@ public class ReactiveRedisRepository {
   }
 
   public Mono<Void> save(BidHistory history) {
-    String key = generateKey(history);
+    String key = generateKey(history.getAuctionId(), history.getRound());
     return reactiveRedisZSet
         .add(key, history, history.getBidAmount())
         .flatMap(success -> reactiveRedisTemplate.expire(key, Duration.ofHours(1L)))
         .then();
   }
 
-  public Mono<List<BidHistory>> getTopBidder(BidHistory history, int range) {
-    String key = generateKey(history);
-    return null;
+  public Flux<BidHistory> getTopBidder(CreateBidRequest request, int maximum) {
+    String key = generateKey(request.getAuctionId(), request.getRound());
+    return reactiveRedisZSet.reverseRange(
+        key, Range.from(Range.Bound.inclusive(0L)).to(Range.Bound.inclusive((long) maximum-1)));
   }
 
-  private String generateKey(BidHistory history) {
-    return AUCTION_KEY + history.getAuctionId() + ROUND_KEY + history.getRound();
+  private String generateKey(String auctionId, String round) {
+    return AUCTION_KEY + auctionId + ROUND_KEY + round;
   }
 }
