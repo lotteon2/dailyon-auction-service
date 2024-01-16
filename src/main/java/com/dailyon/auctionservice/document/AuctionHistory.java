@@ -40,6 +40,12 @@ public class AuctionHistory implements Comparable<AuctionHistory> {
     @DynamoDBAttribute(attributeName = "auction_product_name")
     private String auctionProductName;
 
+    @DynamoDBAttribute(attributeName = "auction_product_size_id")
+    private Long auctionProductSizeId;
+
+    @DynamoDBAttribute(attributeName = "auction_product_size_name")
+    private String auctionProductSizeName;
+
     // 유저의 낙찰 여부
     @DynamoDBTyped(DynamoDBMapperFieldModel.DynamoDBAttributeType.BOOL)
     @DynamoDBAttribute(attributeName = "is_winner")
@@ -74,6 +80,8 @@ public class AuctionHistory implements Comparable<AuctionHistory> {
             Long auctionProductId,
             String auctionProductImg,
             String auctionProductName,
+            Long auctionProductSizeId,
+            String auctionProductSizeName,
             boolean isWinner,
             Long amountToPay,
             Long memberHighestBid,
@@ -85,6 +93,8 @@ public class AuctionHistory implements Comparable<AuctionHistory> {
                 .auctionProductId(auctionProductId)
                 .auctionProductImg(auctionProductImg)
                 .auctionProductName(auctionProductName)
+                .auctionProductSizeId(auctionProductSizeId)
+                .auctionProductSizeName(auctionProductSizeName)
                 .isWinner(isWinner)
                 .amountToPay(amountToPay)
                 .memberHighestBid(memberHighestBid)
