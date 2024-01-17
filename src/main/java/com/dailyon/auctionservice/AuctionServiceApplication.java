@@ -7,6 +7,7 @@ import com.amazonaws.services.dynamodbv2.model.Projection;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.util.TableUtils;
 import com.dailyon.auctionservice.document.Auction;
+import com.dailyon.auctionservice.document.AuctionHistory;
 import com.dailyon.auctionservice.document.BidHistory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -40,29 +41,52 @@ public class AuctionServiceApplication {
   @PostConstruct
   @Profile({"!test"})
   public void setDynamoDB() {
-//    TableUtils.deleteTableIfExists(
-//        dynamoDB, dynamoDBMapper.generateDeleteTableRequest(Auction.class));
 
-//    TableUtils.deleteTableIfExists(
-//        dynamoDB, dynamoDBMapper.generateDeleteTableRequest(BidHistory.class));
+    TableUtils.deleteTableIfExists(
+        dynamoDB, dynamoDBMapper.generateDeleteTableRequest(AuctionHistory.class));
 
-    CreateTableRequest createTableRequest =
+    CreateTableRequest createAuction =
         dynamoDBMapper
             .generateCreateTableRequest(Auction.class)
             .withProvisionedThroughput(new ProvisionedThroughput(10L, 10L));
 
-    CreateTableRequest createTableRequest2 =
+    CreateTableRequest createBidHistory =
         dynamoDBMapper
             .generateCreateTableRequest(BidHistory.class)
+            .withProvisionedThroughput(new ProvisionedThroughput(1000L, 1000L));
+
+    CreateTableRequest createAuctionHistory =
+        dynamoDBMapper
+            .generateCreateTableRequest(AuctionHistory.class)
             .withProvisionedThroughput(new ProvisionedThroughput(1L, 1L));
 
-    createTableRequest2
+    createBidHistory
+        .getGlobalSecondaryIndexes()
+        .forEach(
+            idx ->
+                idx.withProvisionedThroughput(new ProvisionedThroughput(1000L, 1000L))
+                    .withProjection(new Projection().withProjectionType("ALL")));
+    createAuctionHistory
         .getGlobalSecondaryIndexes()
         .forEach(
             idx ->
                 idx.withProvisionedThroughput(new ProvisionedThroughput(1L, 1L))
                     .withProjection(new Projection().withProjectionType("ALL")));
-    TableUtils.createTableIfNotExists(dynamoDB, createTableRequest);
-    TableUtils.createTableIfNotExists(dynamoDB, createTableRequest2);
+    TableUtils.createTableIfNotExists(dynamoDB, createAuction);
+    TableUtils.createTableIfNotExists(dynamoDB, createBidHistory);
+    TableUtils.createTableIfNotExists(dynamoDB, createAuctionHistory);
+  }
+
+  @PreDestroy
+  @Profile({"!test"})
+  public void deleteDB() {
+    TableUtils.deleteTableIfExists(
+        dynamoDB, dynamoDBMapper.generateDeleteTableRequest(Auction.class));
+
+    TableUtils.deleteTableIfExists(
+        dynamoDB, dynamoDBMapper.generateDeleteTableRequest(BidHistory.class));
+
+    TableUtils.deleteTableIfExists(
+        dynamoDB, dynamoDBMapper.generateDeleteTableRequest(AuctionHistory.class));
   }
 }

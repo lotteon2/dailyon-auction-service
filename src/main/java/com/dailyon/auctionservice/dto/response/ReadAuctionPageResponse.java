@@ -39,6 +39,7 @@ public class ReadAuctionPageResponse {
         private Long auctionProductId;
         private String auctionName;
         private Integer startBidPrice;
+        private Integer askingPrice;
         private Integer maximumWinner;
         private LocalDateTime startAt;
         private boolean isStarted;
@@ -50,6 +51,7 @@ public class ReadAuctionPageResponse {
                     .auctionProductId(auction.getAuctionProductId())
                     .auctionName(auction.getAuctionName())
                     .startBidPrice(auction.getStartBidPrice())
+                    .askingPrice(auction.getAskingPrice())
                     .maximumWinner(auction.getMaximumWinner())
                     .startAt(auction.getStartAt())
                     .isStarted(auction.isStarted())

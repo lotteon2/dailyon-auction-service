@@ -1,9 +1,10 @@
 package com.dailyon.auctionservice.config;
 
 import com.dailyon.auctionservice.chat.messaging.RedisChatMessagePublisher;
+import com.dailyon.auctionservice.chat.response.ChatPayload;
+import com.dailyon.auctionservice.chat.util.ChatConstants;
+import com.dailyon.auctionservice.chat.util.ObjectStringConverter;
 import com.dailyon.auctionservice.controller.ChatHandler;
-import com.dailyon.auctionservice.dto.request.Message;
-import com.dailyon.auctionservice.util.ObjectStringConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +29,7 @@ public class WebSocketConfig {
   public ChatHandler webSocketHandler(
       RedisChatMessagePublisher redisChatMessagePublisher,
       ObjectStringConverter objectStringConverter) {
-    Sinks.Many<Message> chatMessageSink = Sinks.many().multicast().directBestEffort();
+    Sinks.Many<ChatPayload> chatMessageSink = Sinks.many().multicast().directBestEffort();
     return new ChatHandler(chatMessageSink, redisChatMessagePublisher, objectStringConverter);
   }
 

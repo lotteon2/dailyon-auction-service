@@ -11,12 +11,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.dailyon.auctionservice.dto.response.ReadAuctionDetailResponse.ReadAuctionResponse;
-
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.dailyon.auctionservice.dto.response.ReadAuctionDetailResponse.ReadAuctionResponse;
 
 @Service
 @Transactional(readOnly = true)
@@ -31,6 +30,7 @@ public class AuctionService {
                         response.getProductId(),
                         auctionRequest.getAuctionName(),
                         auctionRequest.getStartBidPrice(),
+                        auctionRequest.getAskingPrice(),
                         auctionRequest.getMaximumWinner(),
                         auctionRequest.getStartAt()
                 )
@@ -130,5 +130,9 @@ public class AuctionService {
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 경매입니다"));
 
         return ReadAuctionResponse.of(auction);
+    }
+
+    public Auction readAuction(String auctionId) {
+        return auctionRepository.findById(auctionId).orElseThrow(() -> new RuntimeException("존재하지 않는 경매입니다"));
     }
 }

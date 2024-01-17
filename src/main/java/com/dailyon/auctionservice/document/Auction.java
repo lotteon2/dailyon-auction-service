@@ -29,6 +29,9 @@ public class Auction implements Comparable<Auction> {
     @DynamoDBAttribute(attributeName = "start_bid_price")
     private Integer startBidPrice;
 
+    @DynamoDBAttribute(attributeName = "asking_price")
+    private Integer askingPrice;
+
     @DynamoDBAttribute(attributeName = "maximum_winner")
     private Integer maximumWinner;
 
@@ -55,6 +58,7 @@ public class Auction implements Comparable<Auction> {
             Long auctionProductId,
             String auctionName,
             Integer startBidPrice,
+            Integer askingPrice,
             Integer maximumWinner,
             LocalDateTime startAt
     ) {
@@ -62,6 +66,7 @@ public class Auction implements Comparable<Auction> {
                 .auctionProductId(auctionProductId)
                 .auctionName(auctionName)
                 .startBidPrice(startBidPrice)
+                .askingPrice(askingPrice)
                 .maximumWinner(maximumWinner)
                 .startAt(startAt)
                 .build();

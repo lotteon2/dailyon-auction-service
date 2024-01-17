@@ -18,6 +18,7 @@ public class CreateAuctionRequest {
     private String auctionName;
     private LocalDateTime startAt;
     private Integer startBidPrice;
+    private Integer askingPrice;
     private Integer maximumWinner;
 
     private CreateProductRequest productRequest;
