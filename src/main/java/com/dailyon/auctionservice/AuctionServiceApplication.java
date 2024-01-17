@@ -7,6 +7,7 @@ import com.amazonaws.services.dynamodbv2.model.Projection;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.util.TableUtils;
 import com.dailyon.auctionservice.document.Auction;
+import com.dailyon.auctionservice.document.AuctionHistory;
 import com.dailyon.auctionservice.document.BidHistory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -41,17 +42,24 @@ public class AuctionServiceApplication {
   @Profile({"!test"})
   public void setDynamoDB() {
 
-    CreateTableRequest createTableRequest =
+    TableUtils.deleteTableIfExists(
+        dynamoDB, dynamoDBMapper.generateDeleteTableRequest(AuctionHistory.class));
+
+    CreateTableRequest createAuction =
         dynamoDBMapper
             .generateCreateTableRequest(Auction.class)
             .withProvisionedThroughput(new ProvisionedThroughput(10L, 10L));
 
-    CreateTableRequest createTableRequest2 =
+    CreateTableRequest createBidHistory =
         dynamoDBMapper
             .generateCreateTableRequest(BidHistory.class)
             .withProvisionedThroughput(new ProvisionedThroughput(1000L, 1000L));
 
-    createTableRequest2
+    CreateTableRequest createAuctionHistory = dynamoDBMapper
+            .generateCreateTableRequest(AuctionHistory.class)
+            .withProvisionedThroughput(new ProvisionedThroughput(1L, 1L));
+
+    createBidHistory
         .getGlobalSecondaryIndexes()
         .forEach(
             idx ->
