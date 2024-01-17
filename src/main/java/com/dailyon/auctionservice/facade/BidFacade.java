@@ -29,7 +29,6 @@ public class BidFacade {
 
     Mono<Long> bidAmountMono = bidService.create(request, memberId);
     Mono<List<TopBidderResponse>> topBidderMono = bidService.getTopBidder(request, maximumWinner);
-
     return bidAmountMono.flatMap(
         bidAmount ->
             topBidderMono.flatMap(
@@ -40,8 +39,8 @@ public class BidFacade {
                 }));
   }
 
-  public void start() {
+  public Mono<Void> start() {
     ChatPayload<Object> payload = ChatPayload.of(ChatCommand.START, null);
-    chatHandler.sendStart(payload);
+    return chatHandler.sendStart(payload);
   }
 }

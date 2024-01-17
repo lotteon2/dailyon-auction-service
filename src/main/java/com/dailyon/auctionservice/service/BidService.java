@@ -21,16 +21,23 @@ public class BidService {
 
   public Mono<Long> create(CreateBidRequest request, String memberId) {
     BidHistory bidHistory = request.toEntity(memberId);
-    return reactiveRedisRepository
-        .save(bidHistory)
-        .then(Mono.just(bidHistoryRepository.save(bidHistory)))
-        .map(BidHistory::getBidAmount);
+
+    return Mono.justOrEmpty(
+            auctionRepository
+                .findById(request.getAuctionId())
+                .orElseThrow(() -> new RuntimeException("해당 경매정보가 존재하지 않습니다.")))
+        .flatMap(
+            auction ->
+                reactiveRedisRepository
+                    .save(bidHistory, auction)
+                    .flatMap(
+                        bidAmount -> {
+                          bidHistoryRepository.save(bidHistory);
+                          return Mono.just(bidAmount.longValue());
+                        }));
   }
 
   public Mono<List<TopBidderResponse>> getTopBidder(CreateBidRequest request, int maximumWinner) {
-    return reactiveRedisRepository
-        .getTopBidder(request, maximumWinner)
-        .map(TopBidderResponse::from)
-        .collectList();
+    return reactiveRedisRepository.getTopBidder(request, maximumWinner).collectList();
   }
 }

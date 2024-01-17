@@ -44,7 +44,6 @@ public class RedisChatMessagePublisher {
               String result = "EMPTY_MESSAGE";
               try {
                 ChatPayload chatPayload = objectMapper.readValue(message, ChatPayload.class);
-                log.info("chat payload -> {}", chatPayload);
                 result = objectMapper.writeValueAsString(chatPayload);
               } catch (JsonProcessingException e) {
                 log.error("Error converting ChatMessage {} into string", message, e);

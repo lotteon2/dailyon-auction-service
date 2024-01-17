@@ -1,7 +1,11 @@
 package com.dailyon.auctionservice.repository;
 
+import com.dailyon.auctionservice.document.Auction;
 import com.dailyon.auctionservice.document.BidHistory;
 import com.dailyon.auctionservice.dto.request.CreateBidRequest;
+import com.dailyon.auctionservice.dto.response.BidInfo;
+import com.dailyon.auctionservice.dto.response.TopBidderResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Range;
@@ -13,36 +17,63 @@ import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 
+@Slf4j
 @Profile("!test")
 @Repository
 public class ReactiveRedisRepository {
   private static final String AUCTION_KEY = "auction_id:";
-  private static final String ROUND_KEY = ":round:";
-  private final ReactiveZSetOperations reactiveRedisZSet;
-  private final ReactiveRedisTemplate<String, BidHistory> reactiveRedisTemplate;
+  private static final String MEMBER_ID = ":member_id:";
+  private final ReactiveZSetOperations<String, BidInfo> reactiveRedisZSet;
+  private final ReactiveRedisTemplate<String, BidInfo> reactiveRedisTemplate;
 
   public ReactiveRedisRepository(
       @Qualifier("reactiveRedisTemplateForBid")
-          ReactiveRedisTemplate<String, BidHistory> reactiveRedisTemplate) {
+          ReactiveRedisTemplate<String, BidInfo> reactiveRedisTemplate) {
     this.reactiveRedisZSet = reactiveRedisTemplate.opsForZSet();
     this.reactiveRedisTemplate = reactiveRedisTemplate;
   }
 
-  public Mono<Void> save(BidHistory history) {
-    String key = generateKey(history.getAuctionId(), history.getRound());
+  public Mono<Double> save(BidHistory history, Auction auction) {
+    String key = generateKey(history.getAuctionId());
+    BidInfo bidInfo = BidInfo.from(history);
+    long lowerBound = 0L;
+    long upperBound = auction.getMaximumWinner() - 1;
     return reactiveRedisZSet
-        .add(key, history, history.getBidAmount())
-        .flatMap(success -> reactiveRedisTemplate.expire(key, Duration.ofHours(1L)))
-        .then();
+        .rank(key, bidInfo)
+        .flatMap(
+            rank -> {
+              if (rank >= lowerBound && rank <= upperBound) {
+                // value가 원하는 범위 내에 있으므로, score(bidAmount)에 auction.getAskingPrice() 값을 더한다.
+                return reactiveRedisZSet.incrementScore(key, bidInfo, auction.getAskingPrice());
+              } else {
+                return Mono.empty();
+              }
+            })
+        .switchIfEmpty(
+            reactiveRedisZSet
+                .add(key, bidInfo, history.getBidAmount())
+                .thenReturn(history.getBidAmount().doubleValue()))
+        .flatMap(
+            bidAmount -> {
+              reactiveRedisTemplate.expire(key, Duration.ofHours(1L));
+              return Mono.just(bidAmount);
+            });
   }
 
-  public Flux<BidHistory> getTopBidder(CreateBidRequest request, int maximum) {
-    String key = generateKey(request.getAuctionId(), request.getRound());
-    return reactiveRedisZSet.reverseRange(
-        key, Range.from(Range.Bound.inclusive(0L)).to(Range.Bound.inclusive((long) maximum-1)));
+  public Flux<TopBidderResponse> getTopBidder(CreateBidRequest request, int maximum) {
+    String key = generateKey(request.getAuctionId());
+    return reactiveRedisZSet
+        .reverseRange(
+            key,
+            Range.from(Range.Bound.inclusive(0L)).to(Range.Bound.inclusive((long) maximum - 1)))
+        .flatMap(
+            bidInfo ->
+                reactiveRedisZSet
+                    .score(key, bidInfo)
+                    .map(score -> TopBidderResponse.from(bidInfo, Math.round(score))));
   }
 
-  private String generateKey(String auctionId, String round) {
-    return AUCTION_KEY + auctionId + ROUND_KEY + round;
+  private String generateKey(String auctionId) {
+    return AUCTION_KEY + auctionId;
   }
 }

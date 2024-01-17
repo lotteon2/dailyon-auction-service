@@ -2,6 +2,7 @@ package com.dailyon.auctionservice.config;
 
 import com.dailyon.auctionservice.chat.messaging.RedisChatMessageListener;
 import com.dailyon.auctionservice.document.BidHistory;
+import com.dailyon.auctionservice.dto.response.BidInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -64,18 +65,18 @@ public class LocalRedisConfig {
   }
 
   @Bean("reactiveRedisTemplateForBid")
-  public ReactiveRedisTemplate<String, BidHistory> reactiveRedisTemplate(
+  public ReactiveRedisTemplate<String, BidInfo> reactiveRedisTemplate(
       ReactiveRedisConnectionFactory factory) {
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.registerModule(new JavaTimeModule()); // Java 8 날짜/시간 모듈 등록
     objectMapper.disable(
         SerializationFeature.WRITE_DATES_AS_TIMESTAMPS); // 날짜를 timestamp가 아닌 ISO 형식으로 출력
 
-    Jackson2JsonRedisSerializer<BidHistory> serializer =
-        new Jackson2JsonRedisSerializer<>(BidHistory.class);
+    Jackson2JsonRedisSerializer<BidInfo> serializer =
+        new Jackson2JsonRedisSerializer<>(BidInfo.class);
     serializer.setObjectMapper(objectMapper);
-    RedisSerializationContext<String, BidHistory> serializationContext =
-        RedisSerializationContext.<String, BidHistory>newSerializationContext(
+    RedisSerializationContext<String, BidInfo> serializationContext =
+        RedisSerializationContext.<String, BidInfo>newSerializationContext(
                 new StringRedisSerializer())
             .value(serializer)
             .build();
