@@ -7,7 +7,6 @@ import com.dailyon.auctionservice.dto.response.BidInfo;
 import com.dailyon.auctionservice.dto.response.TopBidderResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Range;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.core.ReactiveZSetOperations;
@@ -18,7 +17,6 @@ import reactor.core.publisher.Mono;
 import java.time.Duration;
 
 @Slf4j
-@Profile("!test")
 @Repository
 public class ReactiveRedisRepository {
   private static final String AUCTION_KEY = "auction_id:";
