@@ -55,7 +55,8 @@ public class AuctionServiceApplication {
             .generateCreateTableRequest(BidHistory.class)
             .withProvisionedThroughput(new ProvisionedThroughput(1000L, 1000L));
 
-    CreateTableRequest createAuctionHistory = dynamoDBMapper
+    CreateTableRequest createAuctionHistory =
+        dynamoDBMapper
             .generateCreateTableRequest(AuctionHistory.class)
             .withProvisionedThroughput(new ProvisionedThroughput(1L, 1L));
 
@@ -64,6 +65,12 @@ public class AuctionServiceApplication {
         .forEach(
             idx ->
                 idx.withProvisionedThroughput(new ProvisionedThroughput(1000L, 1000L))
+                    .withProjection(new Projection().withProjectionType("ALL")));
+    createAuctionHistory
+        .getGlobalSecondaryIndexes()
+        .forEach(
+            idx ->
+                idx.withProvisionedThroughput(new ProvisionedThroughput(1L, 1L))
                     .withProjection(new Projection().withProjectionType("ALL")));
     TableUtils.createTableIfNotExists(dynamoDB, createAuction);
     TableUtils.createTableIfNotExists(dynamoDB, createBidHistory);
@@ -80,6 +87,6 @@ public class AuctionServiceApplication {
         dynamoDB, dynamoDBMapper.generateDeleteTableRequest(BidHistory.class));
 
     TableUtils.deleteTableIfExists(
-            dynamoDB, dynamoDBMapper.generateDeleteTableRequest(AuctionHistory.class));
+        dynamoDB, dynamoDBMapper.generateDeleteTableRequest(AuctionHistory.class));
   }
 }
