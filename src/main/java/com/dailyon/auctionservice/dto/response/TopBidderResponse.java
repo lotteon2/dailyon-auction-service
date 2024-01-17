@@ -1,6 +1,5 @@
 package com.dailyon.auctionservice.dto.response;
 
-import com.dailyon.auctionservice.document.BidHistory;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -11,12 +10,11 @@ public class TopBidderResponse {
   private String nickname;
   private Long bidAmount;
 
-  public static TopBidderResponse from(BidHistory bidHistory) {
+  public static TopBidderResponse from(BidInfo bidInfo, Long bidAmount) {
     return TopBidderResponse.builder()
-        .memberId(bidHistory.getMemberId())
-        .nickname(bidHistory.getNickname())
-        .bidAmount(bidHistory.getBidAmount())
+        .memberId(bidInfo.getMemberId())
+        .nickname(bidInfo.getNickname())
+        .bidAmount(bidAmount)
         .build();
   }
-  ;
 }

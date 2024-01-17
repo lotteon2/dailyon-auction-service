@@ -15,7 +15,6 @@ public class BidAdminController {
 
   @GetMapping("/bids/start")
   public Mono<Void> start(@RequestHeader(name = "role") String role) {
-    bidFacade.start();
-    return Mono.empty();
+    return bidFacade.start();
   }
 }

@@ -40,11 +40,6 @@ public class AuctionServiceApplication {
   @PostConstruct
   @Profile({"!test"})
   public void setDynamoDB() {
-//    TableUtils.deleteTableIfExists(
-//        dynamoDB, dynamoDBMapper.generateDeleteTableRequest(Auction.class));
-
-//    TableUtils.deleteTableIfExists(
-//        dynamoDB, dynamoDBMapper.generateDeleteTableRequest(BidHistory.class));
 
     CreateTableRequest createTableRequest =
         dynamoDBMapper
@@ -54,15 +49,24 @@ public class AuctionServiceApplication {
     CreateTableRequest createTableRequest2 =
         dynamoDBMapper
             .generateCreateTableRequest(BidHistory.class)
-            .withProvisionedThroughput(new ProvisionedThroughput(1L, 1L));
+            .withProvisionedThroughput(new ProvisionedThroughput(1000L, 1000L));
 
     createTableRequest2
         .getGlobalSecondaryIndexes()
         .forEach(
             idx ->
-                idx.withProvisionedThroughput(new ProvisionedThroughput(1L, 1L))
+                idx.withProvisionedThroughput(new ProvisionedThroughput(1000L, 1000L))
                     .withProjection(new Projection().withProjectionType("ALL")));
     TableUtils.createTableIfNotExists(dynamoDB, createTableRequest);
     TableUtils.createTableIfNotExists(dynamoDB, createTableRequest2);
+  }
+
+  @PreDestroy
+  public void deleteDB() {
+    TableUtils.deleteTableIfExists(
+        dynamoDB, dynamoDBMapper.generateDeleteTableRequest(Auction.class));
+
+    TableUtils.deleteTableIfExists(
+        dynamoDB, dynamoDBMapper.generateDeleteTableRequest(BidHistory.class));
   }
 }
