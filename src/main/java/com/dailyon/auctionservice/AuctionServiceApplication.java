@@ -65,8 +65,9 @@ public class AuctionServiceApplication {
             idx ->
                 idx.withProvisionedThroughput(new ProvisionedThroughput(1000L, 1000L))
                     .withProjection(new Projection().withProjectionType("ALL")));
-    TableUtils.createTableIfNotExists(dynamoDB, createTableRequest);
-    TableUtils.createTableIfNotExists(dynamoDB, createTableRequest2);
+    TableUtils.createTableIfNotExists(dynamoDB, createAuction);
+    TableUtils.createTableIfNotExists(dynamoDB, createBidHistory);
+    TableUtils.createTableIfNotExists(dynamoDB, createAuctionHistory);
   }
 
   @PreDestroy
@@ -77,5 +78,8 @@ public class AuctionServiceApplication {
 
     TableUtils.deleteTableIfExists(
         dynamoDB, dynamoDBMapper.generateDeleteTableRequest(BidHistory.class));
+
+    TableUtils.deleteTableIfExists(
+            dynamoDB, dynamoDBMapper.generateDeleteTableRequest(AuctionHistory.class));
   }
 }
