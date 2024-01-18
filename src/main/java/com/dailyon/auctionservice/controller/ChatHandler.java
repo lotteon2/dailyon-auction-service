@@ -91,7 +91,7 @@ public class ChatHandler implements WebSocketHandler {
         .doOnSuccess(
             emitResult -> {
               if (emitResult.isFailure()) {
-                log.error("Failed to send message");
+                log.error("Failed to send message :  {}", chatMessage);
               }
             });
   }
