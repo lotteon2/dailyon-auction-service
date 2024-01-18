@@ -78,7 +78,7 @@ public class AuctionServiceApplication {
   }
 
   @PreDestroy
-  @Profile({"!test"})
+  @Profile({"!test","!prod"})
   public void deleteDB() {
     TableUtils.deleteTableIfExists(
         dynamoDB, dynamoDBMapper.generateDeleteTableRequest(Auction.class));
