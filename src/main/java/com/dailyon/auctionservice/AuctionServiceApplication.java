@@ -42,9 +42,6 @@ public class AuctionServiceApplication {
   @Profile({"!test"})
   public void setDynamoDB() {
 
-    TableUtils.deleteTableIfExists(
-        dynamoDB, dynamoDBMapper.generateDeleteTableRequest(AuctionHistory.class));
-
     CreateTableRequest createAuction =
         dynamoDBMapper
             .generateCreateTableRequest(Auction.class)
@@ -53,7 +50,7 @@ public class AuctionServiceApplication {
     CreateTableRequest createBidHistory =
         dynamoDBMapper
             .generateCreateTableRequest(BidHistory.class)
-            .withProvisionedThroughput(new ProvisionedThroughput(1000L, 1000L));
+            .withProvisionedThroughput(new ProvisionedThroughput(100L, 100L));
 
     CreateTableRequest createAuctionHistory =
         dynamoDBMapper
