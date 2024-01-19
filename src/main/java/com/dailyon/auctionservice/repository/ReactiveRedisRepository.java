@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Range;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
+import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.data.redis.core.ReactiveZSetOperations;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -31,7 +32,7 @@ public class ReactiveRedisRepository {
     this.reactiveRedisTemplate = reactiveRedisTemplate;
   }
 
-  public Mono<Double> save(BidHistory history, Auction auction) {
+  public Mono<Double> save(BidHistory history, Auction auction, boolean isInput) {
     String key = generateKey(history.getAuctionId());
     BidInfo bidInfo = BidInfo.from(history);
     long lowerBound = 0L;
@@ -41,8 +42,13 @@ public class ReactiveRedisRepository {
         .flatMap(
             rank -> {
               if (rank >= lowerBound && rank <= upperBound) {
-                // value가 원하는 범위 내에 있으므로, score(bidAmount)에 auction.getAskingPrice() 값을 더한다.
-                return reactiveRedisZSet.incrementScore(key, bidInfo, auction.getAskingPrice());
+                if (isInput) {
+                  return reactiveRedisZSet.add(key, bidInfo, history.getBidAmount())
+                          .thenReturn(history.getBidAmount().doubleValue());
+                } else {
+                  // value가 원하는 범위 내에 있으므로, score(bidAmount)에 auction.getAskingPrice() 값을 더한다.
+                  return reactiveRedisZSet.incrementScore(key, bidInfo, auction.getAskingPrice());
+                }
               } else {
                 return Mono.empty();
               }

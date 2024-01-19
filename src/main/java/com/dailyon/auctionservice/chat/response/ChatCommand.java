@@ -3,5 +3,7 @@ package com.dailyon.auctionservice.chat.response;
 public enum ChatCommand {
   MESSAGE,
   START,
-  BIDDING
+  BIDDING,
+  AUCTION_CLOSE,
+  TIME_SYNC,
 }
