@@ -49,7 +49,7 @@ public class AuctionServiceApplication {
     CreateTableRequest createBidHistory =
         dynamoDBMapper
             .generateCreateTableRequest(BidHistory.class)
-            .withProvisionedThroughput(new ProvisionedThroughput(1000L, 1000L));
+            .withProvisionedThroughput(new ProvisionedThroughput(100L, 100L));
 
     CreateTableRequest createAuctionHistory =
         dynamoDBMapper

@@ -18,7 +18,7 @@ public class ProductClient {
     private final WebClient webClient;
     public Mono<ReadAuctionDetailResponse.ReadProductDetailResponse> readProductDetail(Long productId) {
         return webClient.get()
-                .uri(uriBuilder -> uriBuilder.path("/products/id/{productId}").build(productId))
+                .uri(uriBuilder -> uriBuilder.path("/products/auctions/id/{productId}").build(productId))
                 .retrieve()
                 .bodyToMono(ReadAuctionDetailResponse.ReadProductDetailResponse.class);
     }
