@@ -103,7 +103,7 @@ public class ChatHandler implements WebSocketHandler {
         .then();
   }
 
-  public Mono<Void> sendStart(ChatPayload chatPayload) {
+  public Mono<Void> broadCast(ChatPayload chatPayload) {
     return objectStringConverter
         .objectToString(chatPayload)
         .flatMap(redisChatMessagePublisher::publishChatMessage)

@@ -41,13 +41,13 @@ public class BidFacade {
 
   public Mono<Void> start(String auctionId) {
     ChatPayload<Object> payload = ChatPayload.of(ChatCommand.START, null);
-    auctionService.startAuction(auctionId);
-    return chatHandler.sendStart(payload);
+    return auctionService
+        .startAuction(auctionId)
+        .flatMap(auction -> chatHandler.broadCast(payload));
   }
 
   public Mono<Void> end(String auctionId) {
-    // chatHandler -> broadcast end
-    auctionService.endAuction(auctionId);
-    return Mono.empty();
+    ChatPayload<Object> payload = ChatPayload.of(ChatCommand.AUCTION_CLOSE, null);
+    return auctionService.endAuction(auctionId).flatMap(auction -> chatHandler.broadCast(payload));
   }
 }

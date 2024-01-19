@@ -1,10 +1,7 @@
 package com.dailyon.auctionservice.dto.request;
 
 import com.dailyon.auctionservice.document.BidHistory;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @Builder
@@ -15,6 +12,7 @@ public class CreateBidRequest {
   private String round;
   private String nickname;
   private Long bidAmount;
+  private boolean inputCheck;
 
   public BidHistory toEntity(String memberId) {
     BidHistory.PrimaryKey key = BidHistory.PrimaryKey.createKey(memberId);
