@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -135,4 +136,33 @@ public class AuctionService {
     public Auction readAuction(String auctionId) {
         return auctionRepository.findById(auctionId).orElseThrow(() -> new RuntimeException("존재하지 않는 경매입니다"));
     }
+
+    @Transactional
+    public Auction startAuction(String auctionId) {
+        Auction auction = auctionRepository.findById(auctionId)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 경매입니다"));
+
+        // 아직 시작 가능 시간 전이라면 시작 불가
+        if(auction.getStartAt().isBefore(LocalDateTime.now()) || auction.isStarted() || auction.isEnded()) {
+            throw new RuntimeException("시작 가능한 상태가 아닙니다");
+        }
+
+        auction.setStarted(true);
+        return auctionRepository.save(auction);
+    }
+
+    @Transactional
+    public Auction endAuction(String auctionId) {
+        Auction auction = auctionRepository.findById(auctionId)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 경매입니다"));
+
+        // 아직 시작하지 않았거나, 이미 끝난 경매라면 종료 불가능
+        if(!auction.isStarted() || auction.isEnded()) {
+            throw new RuntimeException("종료 가능한 상태가 아닙니다");
+        }
+
+        auction.setStarted(true);
+        return auctionRepository.save(auction);
+    }
+
 }
