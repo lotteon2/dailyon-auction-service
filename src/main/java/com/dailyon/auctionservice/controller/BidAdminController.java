@@ -13,8 +13,21 @@ public class BidAdminController {
 
   private final BidFacade bidFacade;
 
-  @GetMapping("/bids/start")
-  public Mono<Void> start(@RequestHeader(name = "role") String role) {
-    return bidFacade.start();
+  // 경매 시작
+  @PatchMapping("/bids/start/{auctionId}")
+  public Mono<Void> start(
+          @RequestHeader(name = "role") String role,
+          @PathVariable String auctionId
+  ) {
+    return bidFacade.start(auctionId);
+  }
+
+  // 경매 종료
+  @PatchMapping("/bids/end/{auctionId}")
+  public Mono<Void> end(
+          @RequestHeader(name = "role") String role,
+          @PathVariable String auctionId
+  ) {
+    return bidFacade.end(auctionId);
   }
 }

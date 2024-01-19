@@ -39,8 +39,15 @@ public class BidFacade {
                 }));
   }
 
-  public Mono<Void> start() {
+  public Mono<Void> start(String auctionId) {
     ChatPayload<Object> payload = ChatPayload.of(ChatCommand.START, null);
+    auctionService.startAuction(auctionId);
     return chatHandler.sendStart(payload);
+  }
+
+  public Mono<Void> end(String auctionId) {
+    // chatHandler -> broadcast end
+    auctionService.endAuction(auctionId);
+    return Mono.empty();
   }
 }
