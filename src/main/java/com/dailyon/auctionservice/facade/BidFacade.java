@@ -2,6 +2,7 @@ package com.dailyon.auctionservice.facade;
 
 import com.dailyon.auctionservice.chat.response.ChatCommand;
 import com.dailyon.auctionservice.chat.response.ChatPayload;
+import com.dailyon.auctionservice.chat.scheduler.ChatScheduler;
 import com.dailyon.auctionservice.controller.ChatHandler;
 import com.dailyon.auctionservice.document.Auction;
 import com.dailyon.auctionservice.dto.request.CreateBidRequest;
@@ -22,6 +23,7 @@ public class BidFacade {
   private final BidService bidService;
   private final AuctionService auctionService;
   private final ChatHandler chatHandler;
+  private final ChatScheduler scheduler;
 
   public Mono<Long> createBid(CreateBidRequest request, String memberId) {
     Auction auction = auctionService.readAuction(request.getAuctionId());
@@ -43,7 +45,12 @@ public class BidFacade {
     ChatPayload<Object> payload = ChatPayload.of(ChatCommand.START, null);
     return auctionService
         .startAuction(auctionId)
-        .flatMap(auction -> chatHandler.broadCast(payload));
+        .flatMap(
+            auction -> {
+              chatHandler.broadCast(payload);
+              scheduler.startJob();
+              return Mono.empty();
+            });
   }
 
   public Mono<Void> end(String auctionId) {

@@ -5,4 +5,5 @@ public enum ChatCommand {
   START,
   BIDDING,
   AUCTION_CLOSE,
+  TIME_SYNC,
 }
