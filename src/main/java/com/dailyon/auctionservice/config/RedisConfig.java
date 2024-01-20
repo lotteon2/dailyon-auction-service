@@ -81,6 +81,18 @@ public class RedisConfig {
     return new ReactiveRedisTemplate<>(factory, serializationContext);
   }
 
+  @Bean("reactiveRedisTemplateForAuction")
+  public ReactiveRedisTemplate<String, Long> reactiveRedisTemplateForAuction(
+      ReactiveRedisConnectionFactory factory) {
+    Jackson2JsonRedisSerializer<Long> serializer = new Jackson2JsonRedisSerializer<>(Long.class);
+    RedisSerializationContext<String, Long> serializationContext =
+        RedisSerializationContext.<String, Long>newSerializationContext(new StringRedisSerializer())
+            .value(serializer)
+            .build();
+
+    return new ReactiveRedisTemplate<>(factory, serializationContext);
+  }
+
   @Bean
   ApplicationRunner applicationRunner(RedisChatMessageListener redisChatMessageListener) {
     return args -> {

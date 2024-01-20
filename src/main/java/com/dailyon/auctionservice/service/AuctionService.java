@@ -154,7 +154,6 @@ public class AuctionService {
                   || auction.isEnded()) {
                 return Mono.error(new RuntimeException("시작 가능한 상태가 아닙니다"));
               }
-
               auction.setStarted(true);
               return Mono.justOrEmpty(auctionRepository.save(auction));
             });
@@ -170,7 +169,7 @@ public class AuctionService {
                 return Mono.error(new RuntimeException("종료 가능한 상태가 아닙니다"));
               }
               auction.setEnded(true);
-              return Mono.justOrEmpty(auctionRepository.save(auction));
+              return Mono.fromCallable(() -> auctionRepository.save(auction)).thenReturn(auction);
             });
   }
 }
