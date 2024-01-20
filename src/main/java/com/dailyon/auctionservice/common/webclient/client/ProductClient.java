@@ -23,13 +23,13 @@ public class ProductClient {
                 .bodyToMono(ReadAuctionDetailResponse.ReadProductDetailResponse.class);
     }
 
-    public void deleteProducts(String memberId, String role, List<Long> ids) {
-        String joinedIds = ids.stream().map(String::valueOf).collect(Collectors.joining(","));
-        webClient.delete()
-                .uri(uriBuilder -> uriBuilder.path("/admin/products?ids={joinedIds}").build(joinedIds))
+    public Mono<Void> deleteProducts(String memberId, String role, Long ids) {
+        return webClient.delete()
+                .uri(uriBuilder -> uriBuilder.path("/admin/products").queryParam("ids", ids).build())
                 .header("memberId", memberId)
                 .header("role", role)
-                .retrieve();
+                .retrieve()
+                .bodyToMono(Void.class);
     }
 
     public Mono<CreateProductResponse> createProduct(String memberId, String role,
