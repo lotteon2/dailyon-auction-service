@@ -132,7 +132,7 @@ public class AuctionService {
             .findById(auctionId)
             .orElseThrow(() -> new RuntimeException("존재하지 않는 경매입니다"));
     if (auction.isEnded()) {
-      new RuntimeException(("이미 종료된 경매입니다."));
+        throw new RuntimeException(("이미 종료된 경매입니다."));
     }
     return ReadAuctionResponse.of(auction);
   }
@@ -148,15 +148,16 @@ public class AuctionService {
         .switchIfEmpty(Mono.error(new RuntimeException("존재하지 않는 경매입니다")))
         .flatMap(
             auction -> {
-              // 아직 시작 가능 시간 전이라면 시작 불가
-              if (auction.getStartAt().isAfter(LocalDateTime.now())
-                  || auction.isStarted()
-                  || auction.isEnded()) {
+              // 현재 시각이 경매 시작 시간과 같거나 이후이고, 아직 시작되지 않고, 끝나지 않은 경매라면 시작 가능
+              if((LocalDateTime.now().isEqual(auction.getStartAt()) ||
+                  LocalDateTime.now().isAfter(auction.getStartAt())) &&
+                 (!auction.isStarted() && !auction.isEnded())
+              ) {
+                auction.setStarted(true);
+                return Mono.justOrEmpty(auctionRepository.save(auction));
+              } else {
                 return Mono.error(new RuntimeException("시작 가능한 상태가 아닙니다"));
               }
-
-              auction.setStarted(true);
-              return Mono.justOrEmpty(auctionRepository.save(auction));
             });
   }
 
@@ -172,5 +173,13 @@ public class AuctionService {
               auction.setEnded(true);
               return Mono.justOrEmpty(auctionRepository.save(auction));
             });
+  }
+
+  public void deleteAuction(String auctionId) {
+    auctionRepository.deleteById(auctionId);
+  }
+
+  public void delete(Auction auction) {
+    auctionRepository.delete(auction);
   }
 }
