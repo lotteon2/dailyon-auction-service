@@ -5,17 +5,12 @@ import com.dailyon.auctionservice.chat.response.ChatPayload;
 import com.dailyon.auctionservice.chat.util.ObjectStringConverter;
 import com.dailyon.auctionservice.dto.request.Message;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketMessage;
 import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import static com.dailyon.auctionservice.chat.response.ChatCommand.MESSAGE;
 
@@ -69,21 +64,6 @@ public class ChatHandler implements WebSocketHandler {
                 })
             .then();
     return Mono.zip(inputMessage, outputMessage).then();
-  }
-
-  private Map<String, String> getQueryMap(String queryStr) {
-    Map<String, String> queryMap = new HashMap<>();
-    if (!StringUtils.isEmpty(queryStr)) {
-      String[] queryParam = queryStr.split("&");
-      Arrays.stream(queryParam)
-          .forEach(
-              s -> {
-                String[] kv = s.split("=", 2);
-                String value = kv.length == 2 ? kv[1] : "";
-                queryMap.put(kv[0], value);
-              });
-    }
-    return queryMap;
   }
 
   public Mono<Sinks.EmitResult> sendMessage(ChatPayload chatMessage) {
