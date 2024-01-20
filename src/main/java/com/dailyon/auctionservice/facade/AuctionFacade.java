@@ -24,19 +24,18 @@ public class AuctionFacade {
   private final JwtUtil jwtUtil;
 
   public Mono<CreateAuctionResponse> createAuction(
-      String memberId, String role, CreateAuctionRequest createAuctionRequest) {
+          String memberId, String role, CreateAuctionRequest createAuctionRequest) {
     return productClient
         .createProduct(memberId, role, createAuctionRequest.getProductRequest())
-        .flatMap(
-            response -> {
-              Auction auction = null;
-              try {
+        .flatMap(response -> {
+            Auction auction = null;
+            try {
                 auction = auctionService.create(createAuctionRequest, response);
-              } catch (Exception e) {
-                productClient.deleteProducts(memberId, role, List.of(response.getProductId()));
-              }
-              return Mono.just(CreateAuctionResponse.create(auction, response));
-            });
+            } catch (Exception e) {
+                productClient.deleteProducts(memberId, role, response.getProductId());
+            }
+            return Mono.just(CreateAuctionResponse.create(auction, response));
+        });
   }
 
   public ReadAuctionPageResponse readAuctionsForAdmin(Pageable pageable) {
@@ -54,8 +53,7 @@ public class AuctionFacade {
   public ReadAuctionPageResponse readPastAuctions(Pageable pageable) {
     return ReadAuctionPageResponse.of(auctionService.readPastAuctions(pageable));
   }
-  
-  // TODO : cache 달기
+
   public Mono<ReadAuctionDetailResponse> readAuctionDetail(String auctionId) {
     Mono<ReadAuctionDetailResponse.ReadAuctionResponse> auctionDetail =
         Mono.just(auctionService.readAuctionDetail(auctionId));
@@ -69,9 +67,14 @@ public class AuctionFacade {
         });
   }
 
+  public Mono<Void> deleteAuction(String memberId, String role, String auctionId) {
+      return Mono.just(auctionService.readAuction(auctionId))
+              .flatMap(auction -> productClient.deleteProducts(memberId, role, auction.getAuctionProductId())
+              .then(Mono.fromRunnable(() -> auctionService.delete(auction))));
+  }
+
   public String createToken(Long memberId) {
     Map<String, Object> claims = Map.of("memberId", memberId, "role", "ROLE_USER");
-    String token = jwtUtil.generateToken(String.valueOf(memberId), claims);
-    return token;
+    return jwtUtil.generateToken(String.valueOf(memberId), claims);
   }
 }

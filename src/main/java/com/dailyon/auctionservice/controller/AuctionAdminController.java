@@ -27,8 +27,18 @@ public class AuctionAdminController {
     }
 
     @GetMapping("/auctions")
-    public Mono<ReadAuctionPageResponse> readAuctionsForAdmin(@RequestParam(name = "page") int page,
-                                                              @RequestParam(name = "size") int size) {
+    public Mono<ReadAuctionPageResponse> readAuctionsForAdmin(
+            @RequestParam(name = "page") int page,
+            @RequestParam(name = "size") int size) {
         return Mono.just(auctionFacade.readAuctionsForAdmin(PageRequest.of(page, size)));
+    }
+
+    @DeleteMapping("/auctions")
+    public Mono<Void> deleteAuction(
+            @RequestHeader(name = "memberId") String memberId,
+            @RequestHeader(name = "role") String role,
+            @RequestParam(name = "auctionId") String auctionId
+    ) {
+        return auctionFacade.deleteAuction(memberId, role, auctionId);
     }
 }
