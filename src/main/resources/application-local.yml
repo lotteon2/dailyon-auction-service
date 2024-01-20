@@ -54,3 +54,5 @@ cloud:
       SECRET_ACCESS_KEY: local
     region:
       static: ap-northeast-1
+    stack:
+      auto: false
