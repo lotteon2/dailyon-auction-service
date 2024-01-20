@@ -63,39 +63,62 @@ public class BidService {
   }
 
   public Mono<Void> createAuctionHistories(Auction auction) {
-    Mono<Long> auctionWinnerBid =
-        reactiveRedisRepository
-            .getTopScore(auction.getId(), auction.getMaximumWinner())
-            .map(Double::longValue);
+    return getAuctionWinnerBid(auction).flatMap(bid -> processAuction(auction, bid));
+  }
 
+  private Mono<Long> getAuctionWinnerBid(Auction auction) {
+    return reactiveRedisRepository
+        .getTopScore(auction.getId(), auction.getMaximumWinner())
+        .map(Double::longValue);
+  }
+
+  private Mono<Void> processAuction(Auction auction, Long bid) {
     Mono<ReadAuctionDetailResponse.ReadProductDetailResponse> productInfo =
         productClient.readProductDetail(auction.getAuctionProductId());
 
-    Mono<Void> saveSuccessfulBiddersHistory =
-        productInfo
-            .zipWith(auctionWinnerBid)
-            .flatMapMany(
-                tuple -> createAndSaveAuctionHistories(auction, tuple.getT1(), tuple.getT2(), true))
-            .then();
+    return Mono.when(
+        saveSuccessfulBiddersHistory(productInfo, auction, bid),
+        saveRemainBiddersHistory(productInfo, auction, bid),
+        sendSqsNotification(auction));
+  }
 
-    Mono<Void> saveRemainBiddersHistory =
-        productInfo
-            .zipWith(auctionWinnerBid)
-            .flatMapMany(
-                tuple ->
-                    createAndSaveAuctionHistories(auction, tuple.getT1(), tuple.getT2(), false))
-            .then();
+  private Mono<Void> saveSuccessfulBiddersHistory(
+      Mono<ReadAuctionDetailResponse.ReadProductDetailResponse> productInfo,
+      Auction auction,
+      Long bid) {
+    return productInfo
+        .zipWith(Mono.just(bid))
+        .flatMapMany(
+            tuple -> createAndSaveAuctionHistories(auction, tuple.getT1(), tuple.getT2(), true))
+        .then();
+  }
 
-      Mono<Void> sendSqsNotification = Mono.fromRunnable(() -> {
-          RawNotificationData rawNotificationData = RawNotificationData.forAuctionEnd(auction.getId());
-          SQSNotificationDto sqsNotificationDto = SQSNotificationDto.create(rawNotificationData);
-          auctionSqsProducer.produce(AUCTION_END_NOTIFICATION_QUEUE, sqsNotificationDto);
-      }).onErrorResume(e -> {
-          log.error("SQS메세지 가공, 송신중 에러 발생: " + e.getMessage(), e);
-          return Mono.empty();
-      }).then();
-    
-    return Mono.when(saveSuccessfulBiddersHistory, saveRemainBiddersHistory, sendSqsNotification);
+  private Mono<Void> saveRemainBiddersHistory(
+      Mono<ReadAuctionDetailResponse.ReadProductDetailResponse> productInfo,
+      Auction auction,
+      Long bid) {
+    return productInfo
+        .zipWith(Mono.just(bid))
+        .flatMapMany(
+            tuple -> createAndSaveAuctionHistories(auction, tuple.getT1(), tuple.getT2(), false))
+        .then();
+  }
+
+  private Mono<Void> sendSqsNotification(Auction auction) {
+    return Mono.fromRunnable(
+            () -> {
+              RawNotificationData rawNotificationData =
+                  RawNotificationData.forAuctionEnd(auction.getId());
+              SQSNotificationDto sqsNotificationDto =
+                  SQSNotificationDto.create(rawNotificationData);
+              auctionSqsProducer.produce(AUCTION_END_NOTIFICATION_QUEUE, sqsNotificationDto);
+            })
+        .onErrorResume(
+            e -> {
+              log.error("SQS메세지 가공, 송신중 에러 발생: " + e.getMessage(), e);
+              return Mono.empty();
+            })
+        .then();
   }
 
   private Flux<Void> createAndSaveAuctionHistories(
