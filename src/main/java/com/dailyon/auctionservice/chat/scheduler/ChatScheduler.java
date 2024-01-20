@@ -26,7 +26,7 @@ public class ChatScheduler implements SchedulingConfigurer {
   private final ChatHandler chatHandler;
   private final AuctionService auctionService;
   private final BidService bidService;
-  private long countdown = 1 * 60 * 1000;
+  private long countdown = 1 * 30 * 1000;
   private Disposable jobDisposable;
 
   public ChatScheduler(
