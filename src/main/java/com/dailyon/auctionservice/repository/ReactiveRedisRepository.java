@@ -103,7 +103,7 @@ public class ReactiveRedisRepository {
     String key = generateKey(auction.getId());
     return reactiveRedisZSet.reverseRangeWithScores(
         key,
-        Range.from(Range.Bound.inclusive((long) auction.getMaximumWinner() - 1))
+        Range.from(Range.Bound.inclusive((long) auction.getMaximumWinner()))
             .to(Range.Bound.inclusive((-1L))));
   }
 
