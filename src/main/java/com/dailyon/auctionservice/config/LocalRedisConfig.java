@@ -1,7 +1,6 @@
 package com.dailyon.auctionservice.config;
 
 import com.dailyon.auctionservice.chat.messaging.RedisChatMessageListener;
-import com.dailyon.auctionservice.document.BidHistory;
 import com.dailyon.auctionservice.dto.response.BidInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -78,6 +77,18 @@ public class LocalRedisConfig {
     RedisSerializationContext<String, BidInfo> serializationContext =
         RedisSerializationContext.<String, BidInfo>newSerializationContext(
                 new StringRedisSerializer())
+            .value(serializer)
+            .build();
+
+    return new ReactiveRedisTemplate<>(factory, serializationContext);
+  }
+
+  @Bean("reactiveRedisTemplateForAuction")
+  public ReactiveRedisTemplate<String, Long> reactiveRedisTemplateForAuction(
+      ReactiveRedisConnectionFactory factory) {
+    Jackson2JsonRedisSerializer<Long> serializer = new Jackson2JsonRedisSerializer<>(Long.class);
+    RedisSerializationContext<String, Long> serializationContext =
+        RedisSerializationContext.<String, Long>newSerializationContext(new StringRedisSerializer())
             .value(serializer)
             .build();
 

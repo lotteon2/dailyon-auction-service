@@ -47,14 +47,19 @@ public class BidFacade {
         .startAuction(auctionId)
         .flatMap(
             auction -> {
-              chatHandler.broadCast(payload);
-              scheduler.startJob();
-              return Mono.empty();
+              scheduler.startJob(auctionId);
+              return chatHandler.broadCastStart(payload);
             });
   }
 
   public Mono<Void> end(String auctionId) {
-    ChatPayload<Object> payload = ChatPayload.of(ChatCommand.AUCTION_CLOSE, null);
-    return auctionService.endAuction(auctionId).flatMap(auction -> chatHandler.broadCast(payload));
+    return auctionService
+        .endAuction(auctionId)
+        .flatMap(
+            auction -> {
+              ChatPayload<Object> payload = ChatPayload.of(ChatCommand.AUCTION_CLOSE, null);
+              return chatHandler.broadCast(payload).then();
+            });
   }
+
 }
