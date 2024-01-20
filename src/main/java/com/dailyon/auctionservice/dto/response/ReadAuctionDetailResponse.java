@@ -63,6 +63,7 @@ public class ReadAuctionDetailResponse {
     @AllArgsConstructor
     public static class ReadProductDetailResponse {
         private Long categoryId;
+        private Long brandId;
         private String brandName;
         private String name;
         private String imgUrl;
