@@ -5,6 +5,8 @@ import com.dailyon.auctionservice.repository.ReactiveRedisRepository;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate;
+import org.springframework.cloud.aws.messaging.listener.SimpleMessageListenerContainer;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -22,4 +24,6 @@ import org.springframework.test.context.TestPropertySource;
 public class IntegrationTestSupport {
   @MockBean ReactiveRedisRepository reactiveRedisRepository;
   @MockBean ChatHandler chatHandler;
+  @MockBean SimpleMessageListenerContainer simpleMessageListenerContainer;
+  @MockBean QueueMessagingTemplate queueMessagingTemplate;
 }
