@@ -29,5 +29,6 @@ public class ContainerBaseTestSupport extends IntegrationTestSupport {
         registry.add("cloud.aws.dynamodb.endpoint", () -> endpoint);
         registry.add("cloud.aws.credentials.ACCESS_KEY_ID", () -> "testkey");
         registry.add("cloud.aws.credentials.SECRET_ACCESS_KEY", () -> "testkey");
+        registry.add("cloud.aws.sqs.region", () -> "ap-northeast-1");
     }
 }

@@ -8,11 +8,15 @@ import com.dailyon.auctionservice.dto.request.CreateBidRequest;
 import com.dailyon.auctionservice.dto.response.BidInfo;
 import com.dailyon.auctionservice.dto.response.ReadAuctionDetailResponse;
 import com.dailyon.auctionservice.dto.response.TopBidderResponse;
+import com.dailyon.auctionservice.infra.sqs.AuctionSqsProducer;
+import com.dailyon.auctionservice.infra.sqs.dto.RawNotificationData;
+import com.dailyon.auctionservice.infra.sqs.dto.SQSNotificationDto;
 import com.dailyon.auctionservice.repository.AuctionHistoryRepository;
 import com.dailyon.auctionservice.repository.AuctionRepository;
 import com.dailyon.auctionservice.repository.BidHistoryRepository;
 import com.dailyon.auctionservice.repository.ReactiveRedisRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -20,6 +24,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+import static com.dailyon.auctionservice.infra.sqs.AuctionSqsProducer.AUCTION_END_NOTIFICATION_QUEUE;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BidService {
@@ -27,6 +34,7 @@ public class BidService {
   private final ReactiveRedisRepository reactiveRedisRepository;
   private final AuctionRepository auctionRepository;
   private final ProductClient productClient;
+  private final AuctionSqsProducer auctionSqsProducer;
   private final AuctionHistoryRepository auctionHistoryRepository;
 
   public Mono<Long> create(CreateBidRequest request, String memberId) {
@@ -77,10 +85,17 @@ public class BidService {
                 tuple ->
                     createAndSaveAuctionHistories(auction, tuple.getT1(), tuple.getT2(), false))
             .then();
+
+      Mono<Void> sendSqsNotification = Mono.fromRunnable(() -> {
+          RawNotificationData rawNotificationData = RawNotificationData.forAuctionEnd(auction.getId());
+          SQSNotificationDto sqsNotificationDto = SQSNotificationDto.create(rawNotificationData);
+          auctionSqsProducer.produce(AUCTION_END_NOTIFICATION_QUEUE, sqsNotificationDto);
+      }).onErrorResume(e -> {
+          log.error("SQS메세지 가공, 송신중 에러 발생: " + e.getMessage(), e);
+          return Mono.empty();
+      }).then();
     
-    // sqs 들어갈자리
-    
-    return Mono.when(saveSuccessfulBiddersHistory, saveRemainBiddersHistory);
+    return Mono.when(saveSuccessfulBiddersHistory, saveRemainBiddersHistory, sendSqsNotification);
   }
 
   private Flux<Void> createAndSaveAuctionHistories(
