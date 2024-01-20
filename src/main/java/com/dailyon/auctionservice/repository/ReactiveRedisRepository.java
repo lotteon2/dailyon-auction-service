@@ -114,8 +114,15 @@ public class ReactiveRedisRepository {
         .rangeWithScores(
             key,
             Range.from(Range.Bound.inclusive(0L)).to(Range.Bound.inclusive(((long) maximum - 1))))
-        .last()
-        .map(ZSetOperations.TypedTuple::getScore);
+        .collectList()
+        .flatMap(
+            list -> {
+              if (list.isEmpty()) {
+                return Mono.empty();
+              } else {
+                return Mono.just(list.get(list.size() - 1).getScore());
+              }
+            });
   }
 
   private String generateKey(String auctionId) {
