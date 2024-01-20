@@ -9,8 +9,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,121 +19,159 @@ import java.util.stream.Collectors;
 import static com.dailyon.auctionservice.dto.response.ReadAuctionDetailResponse.ReadAuctionResponse;
 
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class AuctionService {
-    private final AuctionRepository auctionRepository;
+  private final AuctionRepository auctionRepository;
 
-    @Transactional
-    public Auction create(CreateAuctionRequest auctionRequest, CreateProductResponse response) {
-        return auctionRepository.save(
-                Auction.create(
-                        response.getProductId(),
-                        auctionRequest.getAuctionName(),
-                        auctionRequest.getStartBidPrice(),
-                        auctionRequest.getAskingPrice(),
-                        auctionRequest.getMaximumWinner(),
-                        auctionRequest.getStartAt()
-                )
-        );
+  public Auction create(CreateAuctionRequest auctionRequest, CreateProductResponse response) {
+    return auctionRepository.save(
+        Auction.create(
+            response.getProductId(),
+            auctionRequest.getAuctionName(),
+            auctionRequest.getStartBidPrice(),
+            auctionRequest.getAskingPrice(),
+            auctionRequest.getMaximumWinner(),
+            auctionRequest.getStartAt()));
+  }
+
+  public Page<Auction> readAuctionsForAdmin(Pageable pageable) {
+    int currentPage = pageable.getPageNumber();
+    int pageSize = pageable.getPageSize();
+
+    int startIdx = currentPage * pageSize;
+    int endIdx = startIdx + pageSize;
+
+    List<Auction> auctions = auctionRepository.findAll();
+    if (auctions.isEmpty()) {
+      return new PageImpl<>(new ArrayList<>(), pageable, 0);
     }
 
-    public Page<Auction> readAuctionsForAdmin(Pageable pageable) {
-        int currentPage = pageable.getPageNumber();
-        int pageSize = pageable.getPageSize();
+    int totalSize = auctions.size();
 
-        int startIdx = currentPage * pageSize;
-        int endIdx = startIdx + pageSize;
+    List<Auction> sorted =
+        auctions.stream()
+            .sorted(Auction::compareTo)
+            .collect(Collectors.toList())
+            .subList(startIdx, Math.min(endIdx, totalSize));
 
-        List<Auction> auctions = auctionRepository.findAll();
-        if(auctions.isEmpty()) {
-            return new PageImpl<>(new ArrayList<>(), pageable, 0);
-        }
+    return new PageImpl<>(sorted, pageable, totalSize);
+  }
 
-        int totalSize = auctions.size();
+  public Page<Auction> readPastAuctions(Pageable pageable) {
+    int currentPage = pageable.getPageNumber();
+    int pageSize = pageable.getPageSize();
 
-        List<Auction> sorted = auctions.stream()
-                .sorted(Auction::compareTo)
-                .collect(Collectors.toList())
-                .subList(startIdx, Math.min(endIdx, totalSize));
+    int startIdx = currentPage * pageSize;
+    int endIdx = startIdx + pageSize;
 
-        return new PageImpl<>(sorted, pageable, totalSize);
+    List<Auction> auctions = auctionRepository.findAuctionsByStartedAndEnded(true, true);
+    if (auctions.isEmpty()) {
+      return new PageImpl<>(new ArrayList<>(), pageable, 0);
     }
 
-    public Page<Auction> readPastAuctions(Pageable pageable) {
-        int currentPage = pageable.getPageNumber();
-        int pageSize = pageable.getPageSize();
+    int totalSize = auctions.size();
 
-        int startIdx = currentPage * pageSize;
-        int endIdx = startIdx + pageSize;
+    List<Auction> sorted =
+        auctions.stream()
+            .sorted(Auction::compareTo)
+            .collect(Collectors.toList())
+            .subList(startIdx, Math.min(endIdx, totalSize));
 
-        List<Auction> auctions = auctionRepository.findAuctionsByStartedAndEnded(true, true);
-        if(auctions.isEmpty()) {
-            return new PageImpl<>(new ArrayList<>(), pageable, 0);
-        }
+    return new PageImpl<>(sorted, pageable, totalSize);
+  }
 
-        int totalSize = auctions.size();
+  public Page<Auction> readFutureAuctions(Pageable pageable) {
+    int currentPage = pageable.getPageNumber();
+    int pageSize = pageable.getPageSize();
 
-        List<Auction> sorted = auctions.stream()
-                .sorted(Auction::compareTo)
-                .collect(Collectors.toList())
-                .subList(startIdx, Math.min(endIdx, totalSize));
+    int startIdx = currentPage * pageSize;
+    int endIdx = startIdx + pageSize;
 
-        return new PageImpl<>(sorted, pageable, totalSize);
+    List<Auction> auctions = auctionRepository.findAuctionsByStartedAndEnded(false, false);
+    if (auctions.isEmpty()) {
+      return new PageImpl<>(new ArrayList<>(), pageable, 0);
     }
 
-    public Page<Auction> readFutureAuctions(Pageable pageable) {
-        int currentPage = pageable.getPageNumber();
-        int pageSize = pageable.getPageSize();
+    int totalSize = auctions.size();
 
-        int startIdx = currentPage * pageSize;
-        int endIdx = startIdx + pageSize;
+    List<Auction> sorted =
+        auctions.stream()
+            .sorted(Auction::compareTo)
+            .collect(Collectors.toList())
+            .subList(startIdx, Math.min(endIdx, totalSize));
 
-        List<Auction> auctions = auctionRepository.findAuctionsByStartedAndEnded(false, false);
-        if(auctions.isEmpty()) {
-            return new PageImpl<>(new ArrayList<>(), pageable, 0);
-        }
+    return new PageImpl<>(sorted, pageable, totalSize);
+  }
 
-        int totalSize = auctions.size();
+  public Page<Auction> readCurrentAuctions(Pageable pageable) {
+    int currentPage = pageable.getPageNumber();
+    int pageSize = pageable.getPageSize();
 
-        List<Auction> sorted = auctions.stream()
-                .sorted(Auction::compareTo)
-                .collect(Collectors.toList())
-                .subList(startIdx, Math.min(endIdx, totalSize));
+    int startIdx = currentPage * pageSize;
+    int endIdx = startIdx + pageSize;
 
-        return new PageImpl<>(sorted, pageable, totalSize);
+    List<Auction> auctions = auctionRepository.findAuctionsByStartedAndEnded(true, false);
+    if (auctions.isEmpty()) {
+      return new PageImpl<>(new ArrayList<>(), pageable, 0);
     }
 
-    public Page<Auction> readCurrentAuctions(Pageable pageable) {
-        int currentPage = pageable.getPageNumber();
-        int pageSize = pageable.getPageSize();
+    int totalSize = auctions.size();
 
-        int startIdx = currentPage * pageSize;
-        int endIdx = startIdx + pageSize;
+    List<Auction> sorted =
+        auctions.stream()
+            .sorted(Auction::compareTo)
+            .collect(Collectors.toList())
+            .subList(startIdx, Math.min(endIdx, totalSize));
 
-        List<Auction> auctions = auctionRepository.findAuctionsByStartedAndEnded(true, false);
-        if(auctions.isEmpty()) {
-            return new PageImpl<>(new ArrayList<>(), pageable, 0);
-        }
+    return new PageImpl<>(sorted, pageable, totalSize);
+  }
 
-        int totalSize = auctions.size();
+  public ReadAuctionResponse readAuctionDetail(String auctionId) {
+    Auction auction =
+        auctionRepository
+            .findById(auctionId)
+            .orElseThrow(() -> new RuntimeException("존재하지 않는 경매입니다"));
+    if (auction.isEnded()) {
+      new RuntimeException(("이미 종료된 경매입니다."));
+    }
+    return ReadAuctionResponse.of(auction);
+  }
 
-        List<Auction> sorted = auctions.stream()
-                .sorted(Auction::compareTo)
-                .collect(Collectors.toList())
-                .subList(startIdx, Math.min(endIdx, totalSize));
+  public Auction readAuction(String auctionId) {
+    return auctionRepository
+        .findById(auctionId)
+        .orElseThrow(() -> new RuntimeException("존재하지 않는 경매입니다"));
+  }
 
-        return new PageImpl<>(sorted, pageable, totalSize);
+  public Mono<Auction> startAuction(String auctionId) {
+    return Mono.justOrEmpty(auctionRepository.findById(auctionId))
+        .switchIfEmpty(Mono.error(new RuntimeException("존재하지 않는 경매입니다")))
+        .flatMap(
+            auction -> {
+              // 아직 시작 가능 시간 전이라면 시작 불가
+              if (auction.getStartAt().isAfter(LocalDateTime.now())
+                  || auction.isStarted()
+                  || auction.isEnded()) {
+                return Mono.error(new RuntimeException("시작 가능한 상태가 아닙니다"));
+              }
+
+              auction.setStarted(true);
+              return Mono.justOrEmpty(auctionRepository.save(auction));
+            });
+  }
+
+  public Mono<Auction> endAuction(String auctionId) {
+    Auction auction =
+        auctionRepository
+            .findById(auctionId)
+            .orElseThrow(() -> new RuntimeException("존재하지 않는 경매입니다"));
+
+    // 아직 시작하지 않았거나, 이미 끝난 경매라면 종료 불가능
+    if (!auction.isStarted() || auction.isEnded()) {
+      throw new RuntimeException("종료 가능한 상태가 아닙니다");
     }
 
-    public ReadAuctionResponse readAuctionDetail(String auctionId) {
-        Auction auction = auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 경매입니다"));
-
-        return ReadAuctionResponse.of(auction);
-    }
-
-    public Auction readAuction(String auctionId) {
-        return auctionRepository.findById(auctionId).orElseThrow(() -> new RuntimeException("존재하지 않는 경매입니다"));
-    }
+    auction.setEnded(true);
+    return Mono.just(auctionRepository.save(auction));
+  }
 }

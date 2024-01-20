@@ -19,6 +19,7 @@ public class BidApiController {
   @PostMapping("")
   public Mono<Long> bidding(
       @RequestHeader("memberId") String memberId, @RequestBody CreateBidRequest request) {
+    log.info("isInput : {}", request.isInputCheck());
     return bidFacade.createBid(request, memberId);
   }
 }

@@ -29,9 +29,10 @@ public class BidService {
         .flatMap(
             auction ->
                 reactiveRedisRepository
-                    .save(bidHistory, auction)
+                    .save(bidHistory, auction, request.isInputCheck())
                     .flatMap(
                         bidAmount -> {
+                          bidHistory.setBidAmount(bidAmount.longValue());
                           bidHistoryRepository.save(bidHistory);
                           return Mono.just(bidAmount.longValue());
                         }));
