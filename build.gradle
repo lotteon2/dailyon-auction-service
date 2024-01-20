@@ -47,6 +47,9 @@ dependencies {
     implementation platform('org.testcontainers:testcontainers-bom:1.19.3') //import bom
     compileOnly 'org.projectlombok:lombok'
 
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.4.RELEASE'
+    implementation 'org.springframework.cloud:spring-cloud-aws-messaging:2.2.4.RELEASE'
+
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
     annotationProcessor 'org.projectlombok:lombok'

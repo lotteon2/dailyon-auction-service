@@ -18,3 +18,9 @@ logging:
 
 endpoint:
   product-service: http://localhost:8085
+cloud:
+  aws:
+    stack:
+      auto: false
+    region:
+      static: ap-northeast-1

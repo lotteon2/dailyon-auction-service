@@ -89,4 +89,11 @@ public class ChatHandler implements WebSocketHandler {
         .flatMap(redisChatMessagePublisher::publishChatMessage)
         .then();
   }
+
+  public Mono<Void> broadCastStart(ChatPayload payload) {
+    return objectStringConverter
+        .objectToString(payload)
+        .flatMap(redisChatMessagePublisher::publishChatMessage)
+        .then();
+  }
 }
