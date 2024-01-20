@@ -16,6 +16,7 @@ import org.springframework.test.context.TestPropertySource;
       "cloud.aws.dynamodb.endpoint=http://localhost:8000",
       "cloud.aws.credentials.ACCESS_KEY_ID=testkey",
       "cloud.aws.credentials.SECRET_ACCESS_KEY=testkey",
+      "cloud.aws.sqs.region=ap-northeast-1",
       "secretKey=testkey"
     })
 public class IntegrationTestSupport {
