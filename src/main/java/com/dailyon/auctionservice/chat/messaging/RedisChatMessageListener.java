@@ -51,13 +51,14 @@ public class RedisChatMessageListener {
         .listenTo(new PatternTopic(START_TOPIC))
         .map(ReactiveSubscription.Message::getMessage)
         .flatMap(payload -> objectStringConverter.stringToObject(payload, ChatPayload.class))
-        .handle(
-            (chatPayload, sink) -> {
+        .flatMap(
+            chatPayload -> {
               Object data = chatPayload.getData();
               if (data instanceof String) {
                 scheduler.startJob((String) data);
-                sink.next(data);
               }
+              return chatWebSocketHandler.sendMessage(
+                  chatPayload); // send message and return its Mono
             })
         .then();
   }
