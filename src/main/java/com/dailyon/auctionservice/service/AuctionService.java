@@ -149,6 +149,7 @@ public class AuctionService {
         .flatMap(
             auction -> {
               // 현재 시각이 경매 시작 시간과 같거나 이후이고, 아직 시작되지 않고, 끝나지 않은 경매라면 시작 가능
+              auction.setStarted(true);
               return Mono.justOrEmpty(auctionRepository.save(auction));
 //              if((LocalDateTime.now().isEqual(auction.getStartAt()) ||
 //                  LocalDateTime.now().isAfter(auction.getStartAt())) &&
