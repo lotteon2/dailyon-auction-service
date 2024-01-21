@@ -131,9 +131,7 @@ public class AuctionService {
         auctionRepository
             .findById(auctionId)
             .orElseThrow(() -> new RuntimeException("존재하지 않는 경매입니다"));
-    if (auction.isEnded()) {
-        throw new RuntimeException(("이미 종료된 경매입니다."));
-    }
+
     return ReadAuctionResponse.of(auction);
   }
 
