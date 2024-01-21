@@ -77,10 +77,10 @@ public class BidService {
     Mono<ReadAuctionDetailResponse.ReadProductDetailResponse> productInfo =
         productClient.readProductDetail(auction.getAuctionProductId());
 
-    return Mono.when(
-        saveSuccessfulBiddersHistory(productInfo, auction, bid),
-        saveRemainBiddersHistory(productInfo, auction, bid),
-        sendSqsNotification(auction));
+    return Mono.zip(
+            saveSuccessfulBiddersHistory(productInfo, auction, bid),
+            saveRemainBiddersHistory(productInfo, auction, bid))
+        .then(sendSqsNotification(auction));
   }
 
   private Mono<Void> saveSuccessfulBiddersHistory(
