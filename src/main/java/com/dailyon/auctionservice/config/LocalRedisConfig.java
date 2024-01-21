@@ -21,6 +21,7 @@ import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import reactor.core.publisher.Mono;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -98,12 +99,27 @@ public class LocalRedisConfig {
   @Bean
   ApplicationRunner applicationRunner(RedisChatMessageListener redisChatMessageListener) {
     return args -> {
-      redisChatMessageListener
-          .subscribeMessageChannelAndPublishOnWebSocket()
-          .doOnSubscribe(subscription -> log.info("Redis Listener Started"))
-          .doOnError(throwable -> log.error("Error listening to Redis topic.", throwable))
-          .doFinally(signalType -> log.info("Stopped Listener. Signal Type: {}", signalType))
-          .subscribe();
+      Mono<Void> messageChannelSubscription =
+          redisChatMessageListener
+              .subscribeMessageChannelAndPublishOnWebSocket()
+              .doOnSubscribe(subscription -> log.info("Message Channel Listener Started"))
+              .doOnError(
+                  throwable -> log.error("Error listening to Message Channel topic.", throwable))
+              .doFinally(
+                  signalType ->
+                      log.info("Stopped Message Channel Listener. Signal Type: {}", signalType));
+
+      Mono<Void> startTriggerSubscription =
+          redisChatMessageListener
+              .subscribeStartTrigger()
+              .doOnSubscribe(subscription -> log.info("Start Trigger Listener Started"))
+              .doOnError(
+                  throwable -> log.error("Error listening to Start Trigger topic.", throwable))
+              .doFinally(
+                  signalType ->
+                      log.info("Stopped Start Trigger Listener. Signal Type: {}", signalType));
+
+      Mono.zip(messageChannelSubscription, startTriggerSubscription).subscribe();
     };
   }
 }

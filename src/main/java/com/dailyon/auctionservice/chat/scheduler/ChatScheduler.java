@@ -45,7 +45,6 @@ public class ChatScheduler implements SchedulingConfigurer {
 
   public void startJob(String auctionId) {
     countdown = 1 * 30 * 1000;
-    log.info("strtJob : {}", countdown);
     if (this.jobDisposable == null || this.jobDisposable.isDisposed()) {
       this.jobDisposable =
           Flux.interval(Duration.ofSeconds(1)).flatMap(it -> executeJob(auctionId)).subscribe();
@@ -61,7 +60,6 @@ public class ChatScheduler implements SchedulingConfigurer {
   public Mono<Void> executeJob(String auctionId) {
     synchronized (this) { // 동기화 블록 시작
       updateCountdown();
-      log.info("executeJob : {}", countdown);
       if (countdown <= 0) {
         countdown = 0;
         return sendCloseCommand(auctionId)
@@ -74,14 +72,12 @@ public class ChatScheduler implements SchedulingConfigurer {
 
   private void updateCountdown() {
     countdown -= 1000;
-    log.info("updateCountdown : {}", countdown);
     if (countdown <= 0) {
       countdown = 0;
     }
   }
 
   private Mono<Void> sendCloseCommand(String auctionId) {
-    log.info("sendCloseCommand : {}", countdown);
     ChatPayload<Object> payload = ChatPayload.of(ChatCommand.AUCTION_CLOSE, null);
     return auctionService
         .endAuction(auctionId)
@@ -90,7 +86,6 @@ public class ChatScheduler implements SchedulingConfigurer {
   }
 
   private Mono<Void> sendTimeSyncCommand() {
-    log.info("sendTimeSync : {}", countdown);
     ChatPayload<Object> payload = ChatPayload.of(ChatCommand.TIME_SYNC, countdown);
     return chatHandler.broadCast(payload).then();
   }
