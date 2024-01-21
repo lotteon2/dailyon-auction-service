@@ -8,6 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class AuctionProductInfo {
+  private Long productId;
   private String productName;
   private Integer stock;
   private Integer price;
@@ -17,4 +18,5 @@ public class AuctionProductInfo {
   private String sizeName;
   private boolean isWinner;
   private Long orderPrice;
+  private Long categoryId;
 }
