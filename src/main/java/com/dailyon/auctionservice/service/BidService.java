@@ -118,6 +118,7 @@ public class BidService {
                   RawNotificationData.forAuctionEnd(auction.getId());
               SQSNotificationDto sqsNotificationDto =
                   SQSNotificationDto.create(rawNotificationData);
+              log.info("sqs notificationDTO", sqsNotificationDto);
               auctionSqsProducer.produce(AUCTION_END_NOTIFICATION_QUEUE, sqsNotificationDto);
             })
         .onErrorResume(
