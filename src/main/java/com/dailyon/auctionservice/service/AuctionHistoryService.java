@@ -15,26 +15,35 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AuctionHistoryService {
-    private final AuctionHistoryRepository auctionHistoryRepository;
+  private final AuctionHistoryRepository auctionHistoryRepository;
 
-    public Page<AuctionHistory> readAuctionHistories(String memberId, Pageable pageable) {
-        int currentPage = pageable.getPageNumber();
-        int pageSize = pageable.getPageSize();
+  public Page<AuctionHistory> readAuctionHistories(String memberId, Pageable pageable) {
+    int currentPage = pageable.getPageNumber();
+    int pageSize = pageable.getPageSize();
 
-        int startIdx = currentPage * pageSize;
-        int endIdx = startIdx + pageSize;
+    int startIdx = currentPage * pageSize;
+    int endIdx = startIdx + pageSize;
 
-        List<AuctionHistory> auctionHistories = auctionHistoryRepository.findByMemberId(memberId);
-        if(auctionHistories.isEmpty()) {
-            return new PageImpl<>(new ArrayList<>(), pageable, 0);
-        }
-        int totalSize = auctionHistories.size();
-
-        List<AuctionHistory> sorted = auctionHistories.stream()
-                .sorted(AuctionHistory::compareTo)
-                .collect(Collectors.toList())
-                .subList(startIdx, Math.min(endIdx, totalSize));
-
-        return new PageImpl<>(sorted, pageable, totalSize);
+    List<AuctionHistory> auctionHistories = auctionHistoryRepository.findByMemberId(memberId);
+    if (auctionHistories.isEmpty()) {
+      return new PageImpl<>(new ArrayList<>(), pageable, 0);
     }
+    int totalSize = auctionHistories.size();
+
+    List<AuctionHistory> sorted =
+        auctionHistories.stream()
+            .sorted(AuctionHistory::compareTo)
+            .collect(Collectors.toList())
+            .subList(startIdx, Math.min(endIdx, totalSize));
+
+    return new PageImpl<>(sorted, pageable, totalSize);
+  }
+
+  public AuctionHistory getAuctionHistory(String memberId, String auctionId) {
+    AuctionHistory auctionHistory =
+        auctionHistoryRepository
+            .findByAuctionIdAndMemberId(auctionId, memberId)
+            .orElseThrow(() -> new RuntimeException("해당 경매 내역 정보가 존재하지 않습니다."));
+    return auctionHistory;
+  }
 }
