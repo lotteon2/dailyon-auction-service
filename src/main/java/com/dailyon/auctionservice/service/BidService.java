@@ -80,9 +80,8 @@ public class BidService {
     Mono<ReadAuctionDetailResponse.ReadProductDetailResponse> productInfo =
         productClient.readProductDetail(auction.getAuctionProductId());
 
-    return Mono.zip(
-            saveSuccessfulBiddersHistory(productInfo, auction, bid),
-            saveRemainBiddersHistory(productInfo, auction, bid))
+    return saveSuccessfulBiddersHistory(productInfo, auction, bid)
+        .then(saveRemainBiddersHistory(productInfo, auction, bid))
         .then(sendSqsNotification(auction));
   }
 
@@ -119,7 +118,11 @@ public class BidService {
             .zipWith(Mono.just(bid))
             .flatMapMany(
                 tuple -> createAuctionHistories(auction, tuple.getT1(), tuple.getT2(), false));
-    return saveAuctionHistories(auctionHistories).then(auctionHistories.collectList()).then();
+
+    return auctionHistories
+        .collectList()
+        .flatMap(list -> saveAuctionHistories(Flux.fromIterable(list)))
+        .then();
   }
 
   private Mono<Void> sendSqsNotification(Auction auction) {
@@ -153,6 +156,7 @@ public class BidService {
     return bidders.map(
         tuple -> {
           BidInfo value = tuple.getValue();
+          log.info("asdasd {} :", tuple.getValue().getMemberId());
           return value.createAuctionHistory(
               auction, product, tuple.getScore().longValue(), auctionWinnerBid, isSuccessful);
         });
