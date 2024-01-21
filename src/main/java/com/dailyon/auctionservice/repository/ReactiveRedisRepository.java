@@ -111,7 +111,7 @@ public class ReactiveRedisRepository {
     String key = generateKey(auctionId);
     return reactiveRedisTemplate
         .opsForZSet()
-        .rangeWithScores(
+        .reverseRangeWithScores(
             key,
             Range.from(Range.Bound.inclusive(0L)).to(Range.Bound.inclusive(((long) maximum - 1))))
         .collectList()

@@ -47,6 +47,7 @@ public class BidFacade {
         .startAuction(auctionId)
         .flatMap(
             auction -> {
+              log.info("startAuction", auction.getStartAt());
               scheduler.startJob(auctionId);
               return chatHandler.broadCastStart(payload);
             });
@@ -61,5 +62,4 @@ public class BidFacade {
               return chatHandler.broadCast(payload).then();
             });
   }
-
 }

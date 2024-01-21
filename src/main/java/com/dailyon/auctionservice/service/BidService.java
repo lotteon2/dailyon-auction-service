@@ -87,10 +87,15 @@ public class BidService {
       Mono<ReadAuctionDetailResponse.ReadProductDetailResponse> productInfo,
       Auction auction,
       Long bid) {
-    return productInfo
-        .zipWith(Mono.just(bid))
-        .flatMapMany(
-            tuple -> createAndSaveAuctionHistories(auction, tuple.getT1(), tuple.getT2(), true))
+    Flux<AuctionHistory> auctionHistories =
+        productInfo
+            .zipWith(Mono.just(bid))
+            .flatMapMany(
+                tuple -> createAuctionHistories(auction, tuple.getT1(), tuple.getT2(), true));
+
+    return saveAuctionHistories(auctionHistories)
+        .then(auctionHistories.collectList())
+        //                .doOnNext() kafka메세지 들어갈자리
         .then();
   }
 
@@ -98,11 +103,12 @@ public class BidService {
       Mono<ReadAuctionDetailResponse.ReadProductDetailResponse> productInfo,
       Auction auction,
       Long bid) {
-    return productInfo
-        .zipWith(Mono.just(bid))
-        .flatMapMany(
-            tuple -> createAndSaveAuctionHistories(auction, tuple.getT1(), tuple.getT2(), false))
-        .then();
+    Flux<AuctionHistory> auctionHistories =
+        productInfo
+            .zipWith(Mono.just(bid))
+            .flatMapMany(
+                tuple -> createAuctionHistories(auction, tuple.getT1(), tuple.getT2(), false));
+    return saveAuctionHistories(auctionHistories).then(auctionHistories.collectList()).then();
   }
 
   private Mono<Void> sendSqsNotification(Auction auction) {
@@ -122,7 +128,7 @@ public class BidService {
         .then();
   }
 
-  private Flux<Void> createAndSaveAuctionHistories(
+  private Flux<AuctionHistory> createAuctionHistories(
       Auction auction,
       ReadAuctionDetailResponse.ReadProductDetailResponse product,
       long auctionWinnerBid,
@@ -132,13 +138,15 @@ public class BidService {
             ? reactiveRedisRepository.getSuccessfulBidInfos(auction)
             : reactiveRedisRepository.getRemainBidInfos(auction);
 
-    return bidders.flatMap(
+    return bidders.map(
         tuple -> {
           BidInfo value = tuple.getValue();
-          AuctionHistory auctionHistory =
-              value.createAuctionHistory(
-                  auction, product, tuple.getScore().longValue(), auctionWinnerBid, isSuccessful);
-          return Mono.fromRunnable(() -> auctionHistoryRepository.save(auctionHistory));
+          return value.createAuctionHistory(
+              auction, product, tuple.getScore().longValue(), auctionWinnerBid, isSuccessful);
         });
+  }
+
+  private Mono<Void> saveAuctionHistories(Flux<AuctionHistory> auctionHistories) {
+    return Mono.when(auctionHistories.map(auctionHistoryRepository::save).collectList());
   }
 }
