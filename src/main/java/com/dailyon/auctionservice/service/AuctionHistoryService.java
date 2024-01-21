@@ -8,7 +8,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,5 +55,12 @@ public class AuctionHistoryService {
                 biddingDTO.getAuctionId(), String.valueOf(biddingDTO.getMemberId()))
             .get();
     auctionHistoryRepository.delete(auctionHistory);
+  }
+
+  public void update(String auctionId, String memberId) {
+    AuctionHistory auctionHistory =
+        auctionHistoryRepository.findByAuctionIdAndMemberId(auctionId, memberId).get();
+    auctionHistory.setPaid(true);
+    auctionHistoryRepository.save(auctionHistory);
   }
 }
