@@ -8,6 +8,8 @@ import com.dailyon.auctionservice.dto.request.CreateBidRequest;
 import com.dailyon.auctionservice.dto.response.BidInfo;
 import com.dailyon.auctionservice.dto.response.ReadAuctionDetailResponse;
 import com.dailyon.auctionservice.dto.response.TopBidderResponse;
+import com.dailyon.auctionservice.infra.kafka.AuctionEventProducer;
+import com.dailyon.auctionservice.infra.kafka.dto.BiddingDTO;
 import com.dailyon.auctionservice.infra.sqs.AuctionSqsProducer;
 import com.dailyon.auctionservice.infra.sqs.dto.RawNotificationData;
 import com.dailyon.auctionservice.infra.sqs.dto.SQSNotificationDto;
@@ -36,6 +38,7 @@ public class BidService {
   private final ProductClient productClient;
   private final AuctionSqsProducer auctionSqsProducer;
   private final AuctionHistoryRepository auctionHistoryRepository;
+  private final AuctionEventProducer eventProducer;
 
   public Mono<Long> create(CreateBidRequest request, String memberId) {
     BidHistory bidHistory = request.toEntity(memberId);
@@ -94,8 +97,16 @@ public class BidService {
                 tuple -> createAuctionHistories(auction, tuple.getT1(), tuple.getT2(), true));
 
     return saveAuctionHistories(auctionHistories)
-        .then(auctionHistories.collectList())
-        //                .doOnNext() kafka메세지 들어갈자리
+        .doOnNext(
+            auctionHistoryList -> {
+              for (AuctionHistory auctionHistory : auctionHistoryList) {
+                BiddingDTO biddingDTO = new BiddingDTO();
+                biddingDTO.setMemberId(Long.valueOf(auctionHistory.getMemberId()));
+                biddingDTO.setAuctionId(auctionHistory.getAuctionId());
+                biddingDTO.setUsePoints((long) (auctionHistory.getAuctionWinnerBid() * 0.05));
+                eventProducer.createAuctionHistory(biddingDTO);
+              }
+            })
         .then();
   }
 
@@ -147,7 +158,9 @@ public class BidService {
         });
   }
 
-  private Mono<Void> saveAuctionHistories(Flux<AuctionHistory> auctionHistories) {
-    return Mono.when(auctionHistories.map(auctionHistoryRepository::save).collectList());
+  private Mono<List<AuctionHistory>> saveAuctionHistories(Flux<AuctionHistory> auctionHistories) {
+    return auctionHistories
+        .collectList()
+        .flatMap(list -> Flux.fromIterable(list).map(auctionHistoryRepository::save).collectList());
   }
 }
