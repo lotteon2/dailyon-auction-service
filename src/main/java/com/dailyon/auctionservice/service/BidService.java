@@ -69,7 +69,8 @@ public class BidService {
   private Mono<Long> getAuctionWinnerBid(Auction auction) {
     return reactiveRedisRepository
         .getTopScore(auction.getId(), auction.getMaximumWinner())
-        .map(Double::longValue);
+        .map(Double::longValue)
+        .map(bid -> Math.round(bid * 0.95));
   }
 
   private Mono<Void> processAuction(Auction auction, Long bid) {
