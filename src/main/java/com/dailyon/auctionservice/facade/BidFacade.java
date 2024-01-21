@@ -42,7 +42,7 @@ public class BidFacade {
   }
 
   public Mono<Void> start(String auctionId) {
-    ChatPayload<Object> payload = ChatPayload.of(ChatCommand.START, null);
+    ChatPayload<Object> payload = ChatPayload.of(ChatCommand.START, "start");
     return auctionService
         .startAuction(auctionId)
         .flatMap(
@@ -58,7 +58,7 @@ public class BidFacade {
         .endAuction(auctionId)
         .flatMap(
             auction -> {
-              ChatPayload<Object> payload = ChatPayload.of(ChatCommand.AUCTION_CLOSE, null);
+              ChatPayload<Object> payload = ChatPayload.of(ChatCommand.AUCTION_CLOSE, "end");
               return chatHandler.broadCast(payload).then();
             });
   }
