@@ -32,6 +32,7 @@ public class AuctionHistoryFacade {
         product -> {
           AuctionProductInfo auctionProductInfo =
               AuctionProductInfo.builder()
+                  .productId(auctionHistory.getAuctionProductId())
                   .productName(product.getName())
                   .stock(product.getProductStocks().get(0).getQuantity().intValue())
                   .price(product.getPrice())
@@ -41,6 +42,7 @@ public class AuctionHistoryFacade {
                   .sizeName(product.getProductStocks().get(0).getProductSizeName())
                   .isWinner(auctionHistory.isWinner())
                   .orderPrice(auctionHistory.getAuctionWinnerBid())
+                  .categoryId(product.getCategoryId())
                   .build();
           return Mono.just(auctionProductInfo);
         });
