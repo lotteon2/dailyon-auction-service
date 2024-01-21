@@ -1,12 +1,14 @@
 package com.dailyon.auctionservice.service;
 
 import com.dailyon.auctionservice.document.AuctionHistory;
+import com.dailyon.auctionservice.infra.kafka.dto.BiddingDTO;
 import com.dailyon.auctionservice.repository.AuctionHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,5 +47,14 @@ public class AuctionHistoryService {
             .findByAuctionIdAndMemberId(auctionId, memberId)
             .orElseThrow(() -> new RuntimeException("해당 경매 내역 정보가 존재하지 않습니다."));
     return auctionHistory;
+  }
+
+  public void delete(BiddingDTO biddingDTO) {
+    AuctionHistory auctionHistory =
+        auctionHistoryRepository
+            .findByAuctionIdAndMemberId(
+                biddingDTO.getAuctionId(), String.valueOf(biddingDTO.getMemberId()))
+            .get();
+    auctionHistoryRepository.delete(auctionHistory);
   }
 }
