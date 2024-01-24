@@ -58,7 +58,6 @@ public class RedisChatMessagePublisher {
               try {
                 ChatPayload chatPayload = objectMapper.readValue(result, ChatPayload.class);
                 if (chatPayload.getCommand().equals(ChatCommand.START)) {
-                  log.info("if 문안에서 확인 : {}", result);
                   return reactiveStringRedisTemplate
                       .convertAndSend(START_TOPIC, result)
                       .doOnSuccess(
