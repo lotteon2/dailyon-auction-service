@@ -81,7 +81,7 @@ public class ChatScheduler implements SchedulingConfigurer {
   }
 
   public void startJob(String auctionId) {
-    countdown = 1 * 10 * 1000;
+    countdown = 3 * 60 * 1000;
     if (this.jobDisposable == null || this.jobDisposable.isDisposed()) {
       this.jobDisposable =
           Flux.interval(Duration.ofSeconds(1)).flatMap(it -> executeJob(auctionId)).subscribe();
