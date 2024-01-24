@@ -30,12 +30,12 @@ public class LocalDynamoConfig {
     CreateTableRequest createAuction =
         dynamoDBMapper
             .generateCreateTableRequest(Auction.class)
-            .withProvisionedThroughput(new ProvisionedThroughput(10L, 10L));
+            .withProvisionedThroughput(new ProvisionedThroughput(1L, 1L));
 
     CreateTableRequest createBidHistory =
         dynamoDBMapper
             .generateCreateTableRequest(BidHistory.class)
-            .withProvisionedThroughput(new ProvisionedThroughput(100L, 100L));
+            .withProvisionedThroughput(new ProvisionedThroughput(1L, 1L));
 
     CreateTableRequest createAuctionHistory =
         dynamoDBMapper
@@ -46,7 +46,7 @@ public class LocalDynamoConfig {
         .getGlobalSecondaryIndexes()
         .forEach(
             idx ->
-                idx.withProvisionedThroughput(new ProvisionedThroughput(1000L, 1000L))
+                idx.withProvisionedThroughput(new ProvisionedThroughput(1L, 1L))
                     .withProjection(new Projection().withProjectionType("ALL")));
     createAuctionHistory
         .getGlobalSecondaryIndexes()
