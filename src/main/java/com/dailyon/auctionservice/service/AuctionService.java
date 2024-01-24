@@ -5,6 +5,7 @@ import com.dailyon.auctionservice.document.Auction;
 import com.dailyon.auctionservice.dto.request.CreateAuctionRequest;
 import com.dailyon.auctionservice.repository.AuctionRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 
 import static com.dailyon.auctionservice.dto.response.ReadAuctionDetailResponse.ReadAuctionResponse;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuctionService {
@@ -160,6 +162,7 @@ public class AuctionService {
   }
 
   public Mono<Auction> endAuction(String auctionId) {
+    log.info("auctionId {}", auctionId);
     return Mono.justOrEmpty(auctionRepository.findById(auctionId))
         .switchIfEmpty(Mono.error(new RuntimeException("존재하지 않는 경매입니다")))
         .flatMap(
