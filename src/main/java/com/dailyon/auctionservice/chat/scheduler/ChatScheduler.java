@@ -116,6 +116,7 @@ public class ChatScheduler implements SchedulingConfigurer {
   }
 
   private Mono<Void> sendCloseCommand(String auctionId) {
+    log.info("여기나오면안됌 여기는 끝날때만 나오는거야");
     ChatPayload<Object> payload = ChatPayload.of(ChatCommand.AUCTION_CLOSE, null);
     return auctionService
         .endAuction(auctionId)
