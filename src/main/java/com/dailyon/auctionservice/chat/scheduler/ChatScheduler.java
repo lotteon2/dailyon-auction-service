@@ -81,7 +81,6 @@ public class ChatScheduler implements SchedulingConfigurer {
   }
 
   public void startJob(String auctionId) {
-    log.info("startJob : {}", auctionId);
     countdown = 3 * 60 * 1000;
     if (this.jobDisposable == null || this.jobDisposable.isDisposed()) {
       this.jobDisposable =
@@ -116,7 +115,6 @@ public class ChatScheduler implements SchedulingConfigurer {
   }
 
   private Mono<Void> sendCloseCommand(String auctionId) {
-    log.info("여기나오면안됌 여기는 끝날때만 나오는거야");
     ChatPayload<Object> payload = ChatPayload.of(ChatCommand.AUCTION_CLOSE, null);
     return auctionService
         .endAuction(auctionId)
@@ -126,7 +124,6 @@ public class ChatScheduler implements SchedulingConfigurer {
 
   private Mono<Void> sendTimeSyncCommand() {
     ChatPayload<Object> payload = ChatPayload.of(ChatCommand.TIME_SYNC, countdown);
-    log.info("sync payload {}", payload);
     return chatHandler.broadCast(payload).then();
   }
 }

@@ -58,9 +58,7 @@ public class RedisChatMessagePublisher {
             result -> {
               try {
                 ChatPayload chatPayload = objectMapper.readValue(result, ChatPayload.class);
-                log.info("여기 push쪽 command : {}", chatPayload.getCommand());
                 if (chatPayload.getCommand().equals(ChatCommand.START)) {
-                  log.info("들어옴");
                   return reactiveStringRedisTemplate
                       .convertAndSend(START_TOPIC, result)
                       .doOnSuccess(
