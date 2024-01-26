@@ -48,6 +48,7 @@ public class BidFacade {
   }
 
   public Mono<Void> end(String auctionId) {
+    log.info("이것도 나오면안댐");
     return auctionService
         .endAuction(auctionId)
         .flatMap(
