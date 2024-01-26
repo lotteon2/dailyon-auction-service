@@ -47,14 +47,14 @@ public class BidFacade {
         .then();
   }
 
-  public Mono<Void> end(String auctionId) {
-    log.info("이것도 나오면안댐");
-    return auctionService
-        .endAuction(auctionId)
-        .flatMap(
-            auction -> {
-              ChatPayload<Object> payload = ChatPayload.of(ChatCommand.AUCTION_CLOSE, auctionId);
-              return chatHandler.broadCast(payload).then();
-            });
-  }
+//  public Mono<Void> end(String auctionId) {
+//    log.info("이것도 나오면안댐");
+//    return auctionService
+//        .endAuction(auctionId)
+//        .flatMap(
+//            auction -> {
+//              ChatPayload<Object> payload = ChatPayload.of(ChatCommand.AUCTION_CLOSE, auctionId);
+//              return chatHandler.broadCast(payload).then();
+//            });
+//  }
 }
