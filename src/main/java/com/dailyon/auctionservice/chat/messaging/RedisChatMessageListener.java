@@ -54,9 +54,7 @@ public class RedisChatMessageListener {
         .flatMap(
             chatPayload -> {
               Object data = chatPayload.getData();
-              if (data instanceof String) {
-                scheduler.startJob((String) data);
-              }
+              scheduler.startJob((String) data);
               return chatWebSocketHandler.sendMessage(
                   chatPayload); // send message and return its Mono
             })
