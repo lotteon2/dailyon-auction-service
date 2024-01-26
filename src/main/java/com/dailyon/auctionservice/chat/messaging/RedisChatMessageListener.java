@@ -53,6 +53,7 @@ public class RedisChatMessageListener {
         .flatMap(payload -> objectStringConverter.stringToObject(payload, ChatPayload.class))
         .flatMap(
             chatPayload -> {
+                log.info("여기 startjob 쪽임");
               Object data = chatPayload.getData();
               scheduler.startJob((String) data);
               return chatWebSocketHandler.sendMessage(

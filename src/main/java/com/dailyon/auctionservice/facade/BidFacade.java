@@ -2,6 +2,7 @@ package com.dailyon.auctionservice.facade;
 
 import com.dailyon.auctionservice.chat.response.ChatCommand;
 import com.dailyon.auctionservice.chat.response.ChatPayload;
+import com.dailyon.auctionservice.chat.scheduler.ChatScheduler;
 import com.dailyon.auctionservice.controller.ChatHandler;
 import com.dailyon.auctionservice.document.Auction;
 import com.dailyon.auctionservice.dto.request.CreateBidRequest;
@@ -22,6 +23,7 @@ public class BidFacade {
   private final BidService bidService;
   private final AuctionService auctionService;
   private final ChatHandler chatHandler;
+  private final ChatScheduler scheduler;
 
   public Mono<Long> createBid(CreateBidRequest request, String memberId) {
     Auction auction = auctionService.readAuction(request.getAuctionId());
@@ -43,18 +45,23 @@ public class BidFacade {
     ChatPayload<Object> payload = ChatPayload.of(ChatCommand.START, auctionId);
     return auctionService
         .startAuction(auctionId)
-        .flatMap(auction -> chatHandler.broadCastStart(payload))
+        .flatMap(
+            auction -> {
+              scheduler.startJob(auctionId);
+              return chatHandler.broadCastStart(payload);
+            })
         .then();
   }
 
-//  public Mono<Void> end(String auctionId) {
-//    log.info("이것도 나오면안댐");
-//    return auctionService
-//        .endAuction(auctionId)
-//        .flatMap(
-//            auction -> {
-//              ChatPayload<Object> payload = ChatPayload.of(ChatCommand.AUCTION_CLOSE, auctionId);
-//              return chatHandler.broadCast(payload).then();
-//            });
-//  }
+  //  public Mono<Void> end(String auctionId) {
+  //    log.info("이것도 나오면안댐");
+  //    return auctionService
+  //        .endAuction(auctionId)
+  //        .flatMap(
+  //            auction -> {
+  //              ChatPayload<Object> payload = ChatPayload.of(ChatCommand.AUCTION_CLOSE,
+  // auctionId);
+  //              return chatHandler.broadCast(payload).then();
+  //            });
+  //  }
 }
