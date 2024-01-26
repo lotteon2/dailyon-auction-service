@@ -42,6 +42,7 @@ public class RedisChatMessagePublisher {
   }
 
   public Mono<Long> publishChatMessage(String message) {
+    log.info("여기 publishChatMessage {}", message);
     return Mono.just(hostName)
         .map(
             host -> {
@@ -57,7 +58,9 @@ public class RedisChatMessagePublisher {
             result -> {
               try {
                 ChatPayload chatPayload = objectMapper.readValue(result, ChatPayload.class);
+                log.info("여기 push쪽 command : {}", chatPayload.getCommand());
                 if (chatPayload.getCommand().equals(ChatCommand.START)) {
+                  log.info("들어옴");
                   return reactiveStringRedisTemplate
                       .convertAndSend(START_TOPIC, result)
                       .doOnSuccess(
