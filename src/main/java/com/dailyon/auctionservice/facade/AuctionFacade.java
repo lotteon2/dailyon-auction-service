@@ -1,5 +1,6 @@
 package com.dailyon.auctionservice.facade;
 
+import com.dailyon.auctionservice.chat.scheduler.ChatScheduler;
 import com.dailyon.auctionservice.chat.util.JwtUtil;
 import com.dailyon.auctionservice.common.webclient.client.ProductClient;
 import com.dailyon.auctionservice.document.Auction;
@@ -9,33 +10,48 @@ import com.dailyon.auctionservice.dto.response.ReadAuctionDetailResponse;
 import com.dailyon.auctionservice.dto.response.ReadAuctionPageResponse;
 import com.dailyon.auctionservice.service.AuctionService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.quartz.SchedulerException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class AuctionFacade {
   private final AuctionService auctionService;
   private final ProductClient productClient;
+  private final ChatScheduler scheduler;
   private final JwtUtil jwtUtil;
 
   public Mono<CreateAuctionResponse> createAuction(
-          String memberId, String role, CreateAuctionRequest createAuctionRequest) {
+      String memberId, String role, CreateAuctionRequest createAuctionRequest) {
     return productClient
         .createProduct(memberId, role, createAuctionRequest.getProductRequest())
-        .flatMap(response -> {
-            Auction auction = null;
-            try {
+        .flatMap(
+            response -> {
+              Auction auction = null;
+              try {
                 auction = auctionService.create(createAuctionRequest, response);
-            } catch (Exception e) {
+                String auctionId = auction.getId();
+                Auction finalAuction = auction;
+                return Mono.fromRunnable(
+                        () -> {
+                          try {
+                            scheduler.scheduleJob(finalAuction.getStartAt(), auctionId);
+                          } catch (SchedulerException e) {
+                            log.error(e.getMessage());
+                          }
+                        })
+                    .thenReturn(CreateAuctionResponse.create(auction, response));
+              } catch (Exception e) {
                 productClient.deleteProducts(memberId, role, response.getProductId());
-            }
-            return Mono.just(CreateAuctionResponse.create(auction, response));
-        });
+                return Mono.error(e);
+              }
+            });
   }
 
   public ReadAuctionPageResponse readAuctionsForAdmin(Pageable pageable) {
@@ -68,9 +84,12 @@ public class AuctionFacade {
   }
 
   public Mono<Void> deleteAuction(String memberId, String role, String auctionId) {
-      return Mono.just(auctionService.readAuction(auctionId))
-              .flatMap(auction -> productClient.deleteProducts(memberId, role, auction.getAuctionProductId())
-              .then(Mono.fromRunnable(() -> auctionService.delete(auction))));
+    return Mono.just(auctionService.readAuction(auctionId))
+        .flatMap(
+            auction ->
+                productClient
+                    .deleteProducts(memberId, role, auction.getAuctionProductId())
+                    .then(Mono.fromRunnable(() -> auctionService.delete(auction))));
   }
 
   public String createToken(Long memberId) {

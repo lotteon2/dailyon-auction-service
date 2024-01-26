@@ -156,7 +156,6 @@ public class BidService {
     return bidders.map(
         tuple -> {
           BidInfo value = tuple.getValue();
-          log.info("asdasd {} :", tuple.getValue().getMemberId());
           return value.createAuctionHistory(
               auction, product, tuple.getScore().longValue(), auctionWinnerBid, isSuccessful);
         });

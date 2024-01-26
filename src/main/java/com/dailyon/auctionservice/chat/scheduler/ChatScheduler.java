@@ -6,19 +6,25 @@ import com.dailyon.auctionservice.controller.ChatHandler;
 import com.dailyon.auctionservice.service.AuctionService;
 import com.dailyon.auctionservice.service.BidService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Configuration;
+import org.quartz.*;
+import org.springframework.scheduling.SchedulingException;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
+import org.springframework.scheduling.quartz.SchedulerFactoryBean;
+import org.springframework.stereotype.Component;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 
 @Slf4j
-@Configuration
+@Component
 @EnableScheduling
 public class ChatScheduler implements SchedulingConfigurer {
 
@@ -26,21 +32,52 @@ public class ChatScheduler implements SchedulingConfigurer {
   private final ChatHandler chatHandler;
   private final AuctionService auctionService;
   private final BidService bidService;
+  private SchedulerFactoryBean schedulerFactoryBean;
   private long countdown = 1 * 30 * 1000;
   private Disposable jobDisposable;
 
   public ChatScheduler(
-      ChatHandler chatHandler, AuctionService auctionService, BidService bidService) {
+      ChatHandler chatHandler,
+      AuctionService auctionService,
+      BidService bidService,
+      SchedulerFactoryBean schedulerFactoryBean) {
     taskScheduler = new ThreadPoolTaskScheduler();
     taskScheduler.initialize();
     this.chatHandler = chatHandler;
     this.auctionService = auctionService;
     this.bidService = bidService;
+    this.schedulerFactoryBean = schedulerFactoryBean;
   }
 
   @Override
   public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
     taskRegistrar.setTaskScheduler(taskScheduler);
+  }
+
+  public void scheduleJob(LocalDateTime startTime, String auctionId)
+      throws SchedulingException, SchedulerException {
+    Date startAt = Date.from(startTime.atZone(ZoneId.systemDefault()).toInstant());
+
+    // JobDataMap에 auctionId 저장
+    JobDataMap jobDataMap = new JobDataMap();
+    jobDataMap.put("auctionId", auctionId);
+
+    JobDetail jobDetail =
+        JobBuilder.newJob(AuctionActivationJob.class)
+            .withIdentity("auctionActivationJob")
+            .usingJobData(jobDataMap) // JobDataMap 사용
+            .build();
+
+    Trigger trigger =
+        TriggerBuilder.newTrigger()
+            .withIdentity("auctionActivationTrigger")
+            .startAt(startAt)
+            .build();
+
+    Scheduler scheduler = schedulerFactoryBean.getScheduler();
+    scheduler.scheduleJob(jobDetail, trigger);
+
+    scheduler.start();
   }
 
   public void startJob(String auctionId) {

@@ -71,7 +71,6 @@ public class ChatHandler implements WebSocketHandler {
         .doOnSuccess(
             emitResult -> {
               if (emitResult.isFailure()) {
-                log.error("emit result : {}", emitResult);
               }
             });
   }
@@ -91,6 +90,7 @@ public class ChatHandler implements WebSocketHandler {
   }
 
   public Mono<Void> broadCastStart(ChatPayload payload) {
+    log.info("start payload : {}", payload.getData());
     return objectStringConverter
         .objectToString(payload)
         .flatMap(redisChatMessagePublisher::publishChatMessage)
